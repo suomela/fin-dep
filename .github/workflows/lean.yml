@@ -1,0 +1,51 @@
+name: Lean CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      LAKE_JOBS: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build with `lean-action`
+        uses: leanprover/lean-action@v1
+        with:
+          build-args: "FiniteDependence"
+
+  proof-scripts:
+    name: Proof Scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Run exact proof checks
+        working-directory: proof
+        run: |
+          uv run python scripts/prove_weak2_threshold.py
+          uv run --with sympy python scripts/prove_k3_impossible.py
+          uv run --with sympy python scripts/prove_k4_impossible.py
+          uv run --with sympy python scripts/prove_k5_impossible.py

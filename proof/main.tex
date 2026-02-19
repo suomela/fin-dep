@@ -1,0 +1,1158 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amsthm, amssymb, mathtools}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+% --- Notation ---
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\w}[1]{\texttt{#1}}
+\newcommand{\Pw}[1]{P(\w{#1})}
+
+\title{Finitely dependent processes on $\Z$: a human-readable companion}
+\date{February 5, 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\paragraph{Scope.}
+This document is intended to be a readable companion to the Lean 4 development in the repository
+root.
+It presents the same headline results as the public Lean API
+\path{FiniteDependence/API/Definitions.lean} and
+\path{FiniteDependence/API/MainTheorems.lean}.
+In particular, it proves:
+\begin{itemize}[leftmargin=2em]
+  \item equivalence of the cut and noncontiguous notions of finite dependence on $\Z$;
+  \item proper colorings: existence of stationary $1$-dependent $4$-colorings, but no stationary
+  $0$-dependent proper $4$-coloring;
+  \item proper colorings: existence of stationary $2$-dependent $3$-colorings, but no stationary
+  $1$-dependent proper $3$-coloring;
+  \item weak $2$-colorings (forbidden \w{000}, \w{111}): existence at dependence range $3$,
+  impossibility at range $2$;
+  \item greedy proper $3$-colorings: existence at dependence range $6$, impossibility at range $5$;
+  \item MIS: existence at dependence range $6$, impossibility at range $5$.
+\end{itemize}
+The existence results are short reductions from Holroyd--Liggett \cite{HolroydLiggettFDC}.
+For early examples separating finite dependence from block-factor structure, see
+Burton--Goulet--Meester \cite{BurtonGouletMeester1993}.
+The MIS $k=5$ lower bound is presented at the level of finite cylinder probabilities, with exact
+verification scripts in \texttt{proof/scripts/}.
+
+\paragraph{Main statements (API order).}
+The public Lean API exposes exactly the following headline theorems, proved here as:
+\begin{itemize}[leftmargin=2em]
+  \item cut/noncontiguous dependence equivalence:
+  Proposition~\ref{prop:kdep-equivalence};
+  \item $4$-colorings ($k=1$ exists, $k=0$ impossible):
+  Corollary~\ref{cor:4color-threshold};
+  \item $3$-colorings ($k=2$ exists, $k=1$ impossible):
+  Corollary~\ref{cor:3color-threshold};
+  \item weak $2$-colorings ($k=3$ exists, $k=2$ impossible):
+  Corollary~\ref{cor:weak2-threshold};
+  \item greedy proper $3$-colorings ($k=6$ exists, $k=5$ impossible):
+  Corollary~\ref{cor:greedy3-threshold};
+  \item MIS ($k=6$ exists, $k=5$ impossible):
+  Corollary~\ref{cor:mis-threshold}.
+\end{itemize}
+
+\section{Problem statement and basic definitions}
+
+We view $\Z$ as the vertex set of the integer line graph, with edges between $i$ and $i+1$.
+
+\begin{definition}[MIS on $\Z$]
+For a configuration $x\in\{0,1\}^{\Z}$ we say:
+\begin{itemize}[leftmargin=2em]
+  \item $x$ is an \emph{independent set} if there are no adjacent $1$'s, i.e. $x_i=x_{i+1}=1$ never
+  occurs;
+  \item $x$ is a \emph{maximal independent set} (MIS) if it is an independent set and moreover one
+  cannot add any additional vertex: for every $i$ with $x_i=0$, at least one of $x_{i-1},x_{i+1}$ is
+  $1$.
+\end{itemize}
+\end{definition}
+
+It is convenient to express MIS as a shift of finite type.
+
+\begin{proposition}[MIS as forbidden patterns]
+\label{prop:mis-sft}
+A configuration $x\in\{0,1\}^{\Z}$ is an MIS if and only if it forbids the two finite patterns
+\[
+\w{11},\qquad \w{000},
+\]
+meaning that neither word appears as a contiguous subword of $x$.
+\end{proposition}
+
+\begin{proof}
+If $\w{11}$ occurs then $x$ is not independent.  If $\w{000}$ occurs at sites $i-1,i,i+1$, then the
+middle site $i$ has both neighbors $0$, so adding $i$ preserves independence, contradicting
+maximality.
+
+Conversely, if $\w{11}$ never occurs then $x$ is independent.  If $x_i=0$ then the triple
+$(x_{i-1},x_i,x_{i+1})$ is not $\w{000}$, hence at least one neighbor is $1$; thus no vertex can be
+added and $x$ is maximal.
+\end{proof}
+
+\subsection{Stationary processes and cylinders}
+
+Let $(X_i)_{i\in\Z}$ be a random process taking values in $\{0,1\}$.
+For a finite binary word $w=w_0\cdots w_{L-1}\in\{0,1\}^L$, define the origin cylinder probability
+\[
+P(w) := \PP(X_0\cdots X_{L-1}=w).
+\]
+When the law is stationary, this equals the probability of seeing $w$ starting at \emph{any} site.
+
+\begin{definition}[Stationarity]
+Let $\mu$ be a probability measure on $\{0,1\}^{\Z}$ and let $T$ be the left shift
+$(Tx)_i := x_{i+1}$.  We call $\mu$ \emph{stationary} if $\mu\circ T^{-1} = \mu$.
+Equivalently, all cylinder probabilities $\PP(X_a\cdots X_{a+L-1}=w)$ are independent of $a$.
+\end{definition}
+
+Stationarity implies the basic ``prefix = suffix'' identities:
+for every word $u\in\{0,1\}^{L-1}$,
+\begin{equation}
+\label{eq:stationarity-prefix-suffix}
+\sum_{b\in\{0,1\}} P(ub) = \sum_{b\in\{0,1\}} P(bu).
+\end{equation}
+(Both sides equal $\PP(X_0\cdots X_{L-2}=u)$, computed either as a prefix marginal or a suffix
+marginal.)
+
+\subsection{\texorpdfstring{Two notions of $k$-dependence}{Two notions of k-dependence}}
+
+We now define two standard notions of finite dependence for $\Z$-indexed processes.
+Let $\mathcal{F}_A := \sigma(X_i : i\in A)$ be the coordinate $\sigma$-field generated by indices
+in $A\subseteq\Z$.
+
+\begin{definition}[Distance between index sets]
+For $A,B\subseteq\Z$ define
+\[
+\mathrm{dist}(A,B) := \inf\{|a-b| : a\in A, b\in B\}\in\{0,1,2,\dots\}\cup\{\infty\}.
+\]
+\end{definition}
+
+\begin{definition}[$k$-dependence: noncontiguous (index-set) form]
+\label{def:kdep-noncontig}
+The process $(X_i)_{i\in\Z}$ is \emph{$k$-dependent} in the noncontiguous form if for all
+$A,B\subseteq\Z$ with $\mathrm{dist}(A,B) > k$, the $\sigma$-fields $\mathcal{F}_A$ and
+$\mathcal{F}_B$ are independent.
+\end{definition}
+
+\begin{definition}[$k$-dependence: cut form]
+\label{def:kdep-cut}
+The process is \emph{$k$-dependent} in the cut form if for every $i\in\Z$ the ``past'' and
+``future'' $\sigma$-fields
+\[
+\mathcal{F}_{(-\infty,i]}\quad\text{and}\quad \mathcal{F}_{[i+k+1,\infty)}
+\]
+are independent.
+\end{definition}
+
+\begin{proposition}[Cut and noncontiguous definitions agree on $\Z$]
+\label{prop:kdep-equivalence}
+Definitions~\ref{def:kdep-noncontig} and~\ref{def:kdep-cut} are equivalent.
+\end{proposition}
+
+\begin{proof}
+Noncontiguous $\Rightarrow$ cut: apply Definition~\ref{def:kdep-noncontig} with
+$A=(-\infty,i]$ and $B=[i+k+1,\infty)$, whose distance is $k+1$.
+
+Cut $\Rightarrow$ noncontiguous is more subtle: one first proves independence for finite index sets
+by repeatedly applying cut-independence across a suitable sequence of cuts, then extends to
+arbitrary sets by directed-$\sigma$-field (equivalently monotone-class) arguments.
+This is exactly what is formalized in Lean in
+\path{FiniteDependence/Coloring/DependenceEquivalence.lean}.
+\end{proof}
+
+\subsection{\texorpdfstring{A cylinder identity from $k$-dependence}{A cylinder identity from k-dependence}}
+
+The lower-bound proofs use $k$-dependence only through a finite-word identity.
+
+\begin{lemma}[Prefix/suffix independence identity]
+\label{lem:split-identity}
+Assume $(X_i)$ is $k$-dependent.
+Let $x\in\{0,1\}^m$ and $y\in\{0,1\}^n$ and set $L=m+k+n$.
+Then
+\begin{equation}
+\label{eq:split-identity}
+\sum_{g\in\{0,1\}^k} P(xgy) = P(x)\,P(y).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Let $A$ be the event $\{X_0\cdots X_{m-1}=x\}$ and let $B$ be the event
+$\{X_{m+k}\cdots X_{m+k+n-1}=y\}$.  The index sets $\{0,\dots,m-1\}$ and
+$\{m+k,\dots,m+k+n-1\}$ have distance $k+1>k$, so $A$ and $B$ are independent and
+$\PP(A\cap B)=\PP(A)\PP(B)=P(x)P(y)$.
+
+On the other hand, $A\cap B$ is the disjoint union (over $g\in\{0,1\}^k$) of the cylinder events
+$\{X_0\cdots X_{L-1}=xgy\}$.  Summing their probabilities gives~\eqref{eq:split-identity}.
+\end{proof}
+
+\section{Coloring and MIS existence results}
+
+The core existence input is Theorem~1 of Holroyd--Liggett \cite{HolroydLiggettFDC}.
+
+\begin{theorem}[Holroyd--Liggett]
+\label{thm:hl-colorings}
+There exist stationary proper colorings on $\Z$ with:
+\begin{itemize}[leftmargin=2em]
+  \item a $1$-dependent $4$-coloring;
+  \item a $2$-dependent $3$-coloring.
+\end{itemize}
+\end{theorem}
+
+\begin{corollary}[API existence statements for proper colorings]
+\label{cor:api-coloring-existence}
+There exists a stationary proper $4$-coloring with dependence range $1$, and there exists a
+stationary proper $3$-coloring with dependence range $2$.
+\end{corollary}
+
+\begin{proof}
+This is exactly Theorem~\ref{thm:hl-colorings}.
+\end{proof}
+
+\begin{remark}
+Beyond Theorem~\ref{thm:hl-colorings}, explicit finitely dependent colorings on $\Z$ include the
+symmetric $1$-dependent $q$-colorings for all $q\ge 4$ constructed by Holroyd--Liggett
+\cite{HolroydLiggettSymmetric1Dep}. We do not use these additional families in the proofs below.
+\end{remark}
+
+\subsection{\texorpdfstring{No stationary $0$-dependent proper $4$-coloring}{No stationary 0-dependent proper 4-coloring}}
+
+\begin{theorem}
+\label{thm:no-k0-4coloring}
+There is no stationary $0$-dependent proper $4$-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Suppose $(C_i)_{i\in\Z}$ is stationary, proper, and $0$-dependent, with values in $\{1,2,3,4\}$.
+For each color $a$, let
+\[
+A_a:=\{C_0=a\},\qquad B_a:=\{C_1=a\}.
+\]
+Properness implies $A_a\cap B_a=\varnothing$, hence $\PP(A_a\cap B_a)=0$.
+
+By $0$-dependence, $\sigma(C_0)$ and $\sigma(C_1)$ are independent, so
+\[
+0=\PP(A_a\cap B_a)=\PP(A_a)\PP(B_a).
+\]
+Stationarity gives $\PP(A_a)=\PP(B_a)$, therefore $\PP(A_a)^2=0$ and $\PP(A_a)=0$ for each $a$.
+Summing over $a\in\{1,2,3,4\}$,
+\[
+1=\sum_{a=1}^4 \PP(A_a)=0,
+\]
+contradiction.
+\end{proof}
+
+\begin{corollary}[Threshold for proper $4$-colorings]
+\label{cor:4color-threshold}
+For proper $4$-colorings on $\Z$, stationary finite dependence is possible at range $1$ and
+impossible at range $0$.
+\end{corollary}
+
+\begin{proof}
+Combine Corollary~\ref{cor:api-coloring-existence} (the $4$-coloring existence part) with
+Theorem~\ref{thm:no-k0-4coloring}.
+\end{proof}
+
+\subsection{A greedy local map from a 3-coloring to an MIS}
+
+Given a proper coloring $c\in\{0,1,2\}^{\Z}$ we define a $0/1$ configuration
+$x=\mathrm{GreedyMIS}(c)\in\{0,1\}^{\Z}$ by processing colors in order $0,1,2$:
+\begin{itemize}[leftmargin=2em]
+  \item accept every vertex of color $0$;
+  \item accept a vertex of color $1$ if neither neighbor was accepted (equivalently, if neither
+  neighbor has color $0$);
+  \item accept a vertex of color $2$ if neither neighbor was accepted (equivalently, if neither
+  neighbor has color $0$ and neither neighbor is a color-$1$ vertex that gets accepted).
+\end{itemize}
+Concretely, acceptance at site $i$ depends only on the colors in the window
+$\{i-2,i-1,i,i+1,i+2\}$ (radius $2$).
+This is exactly the local rule implemented in the Lean file
+\path{FiniteDependence/Coloring/MIS.lean}.
+
+\begin{lemma}[Greedy map produces an MIS]
+\label{lem:greedy-is-mis}
+If $c$ is a proper coloring of $\Z$, then $x=\mathrm{GreedyMIS}(c)$ is a maximal independent set.
+Equivalently, $x$ forbids $\w{11}$ and $\w{000}$.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+By construction, whenever a vertex is accepted, its two neighbors are rejected at the moment they
+are processed, so adjacent accepted vertices never occur; hence $\w{11}$ is forbidden.
+
+For maximality, if $x_i=0$ then $i$ was rejected because at least one neighbor was accepted earlier
+in the greedy order (a neighbor of color $0$ is always accepted; a neighbor of color $1$ is accepted
+precisely when it has no adjacent $0$; etc.).  Thus every rejected vertex has an accepted neighbor,
+so $\w{000}$ is forbidden.
+
+A fully formal proof appears in \path{FiniteDependence/Coloring/MIS.lean}.
+\end{proof}
+
+\subsection{Dependence range}
+
+Local maps preserve stationarity, and they enlarge the dependence range by at most twice the local
+radius.
+
+\begin{lemma}[Local maps preserve finite dependence]
+\label{lem:local-factor}
+Let $(Y_i)_{i\in\Z}$ be a $k$-dependent process and suppose $X_i$ is a deterministic function of
+$(Y_{i-r},\dots,Y_{i+r})$ for some radius $r$.
+Then $(X_i)$ is $(k+2r)$-dependent.
+\end{lemma}
+
+\begin{proof}
+If $A,B\subseteq\Z$ have $\mathrm{dist}(A,B)>k+2r$, then the $r$-neighborhoods
+$A^{+r}:=\{a-r,\dots,a+r : a\in A\}$ and $B^{+r}$ satisfy $\mathrm{dist}(A^{+r},B^{+r})>k$.
+The $\sigma$-field generated by $(X_i)_{i\in A}$ is contained in that generated by $(Y_j)_{j\in
+A^{+r}}$, and similarly for $B$.  Independence of the latter (by $k$-dependence of $Y$) implies
+independence of the former.
+\end{proof}
+
+Combining Theorem~\ref{thm:hl-colorings} (its $2$-dependent $3$-coloring part) with the radius-$2$
+greedy map gives:
+
+\begin{theorem}[Existence of a stationary 6-dependent MIS on $\Z$]
+\label{thm:upper-bound}
+There exists a stationary $6$-dependent probability measure on MIS configurations in $\{0,1\}^{\Z}$.
+\end{theorem}
+
+\begin{proof}
+Let $(C_i)$ be the stationary $2$-dependent proper $3$-coloring from
+Theorem~\ref{thm:hl-colorings}.  Define $X=\mathrm{GreedyMIS}(C)$ by the greedy radius-$2$ map.
+By Lemma~\ref{lem:greedy-is-mis}, $X$ is almost surely an MIS.
+By Lemma~\ref{lem:local-factor} with $(k,r)=(2,2)$, the process $X$ is $6$-dependent, and it is
+stationary because it is a shift-commuting factor of a stationary process.
+\end{proof}
+
+\section{\texorpdfstring{Lower bound: no stationary $k$-dependent MIS for $k\le 5$}{Lower bound: no stationary k-dependent MIS for k <= 5}}
+
+Throughout this section, $(X_i)_{i\in\Z}\in\{0,1\}^{\Z}$ is assumed stationary, supported on MIS
+configurations, and $k$-dependent.
+
+Write
+\[
+p := \PP(X_0=1).
+\]
+From stationarity and the forbidden word $\w{11}$ we have
+\[
+P(\w{01}) = P(\w{10}) = p,\qquad P(\w{00}) = 1-2p.
+\]
+Also $\w{000}$ forbidden implies $p\ge 1/3$ (each triple contains a $1$), and $\w{11}$ implies
+$p\le 1/2$.
+
+\subsection{\texorpdfstring{No $k$-dependent MIS for $k\le 2$}{No k-dependent MIS for k <= 2}}
+
+\begin{proposition}
+\label{prop:no-kle2}
+There is no stationary $k$-dependent MIS on $\Z$ for $k\le 2$.
+\end{proposition}
+
+\begin{proof}
+Assume $k\le 2$.  Let
+\[
+A := \{X_0X_1=\w{00}\},\qquad B := \{X_4X_5=\w{00}\}.
+\]
+These events depend on disjoint index sets at distance $3>k$, hence are independent:
+$\PP(A\cap B)=\PP(A)^2$.
+
+But $A$ forces $X_2=1$ (else $X_0X_1X_2=\w{000}$), and $B$ forces $X_3=1$, so $A\cap B$ forces
+$X_2X_3=\w{11}$, impossible for an MIS.  Thus $\PP(A\cap B)=0$ and hence $\PP(A)=0$, i.e.
+$P(\w{00})=0$.
+
+If $\w{00}$ never occurs, the only MIS configurations are the two alternating sequences
+$\cdots\w{1010}\cdots$ and $\cdots\w{0101}\cdots$.  Hence for every $n$, $X_n$ is a deterministic
+function of $X_0$ (equal to $X_0$ for even $n$, equal to $1-X_0$ for odd $n$). In particular,
+$X_0$ and $X_{k+1}$ are not independent for any finite $k$, contradicting $k$-dependence.
+\end{proof}
+
+\subsection{No stationary 3-dependent MIS}
+
+\begin{proposition}
+\label{prop:no-k3}
+There is no stationary 3-dependent MIS process on $\Z$.
+\end{proposition}
+
+\begin{proof}
+Assume $k=3$.  The allowed length-$5$ words (forbidding $\w{11}$ and $\w{000}$) are exactly:
+\[
+\w{00100}, \w{00101}, \w{01001}, \w{01010}, \w{10010}, \w{10100}, \w{10101}.
+\]
+Write their probabilities as
+\[
+\begin{aligned}
+a&:=\Pw{00100},\quad b:=\Pw{00101},\quad c:=\Pw{01001},\quad d:=\Pw{01010},\\ e&:=\Pw{10010},\quad f:=\Pw{10100},\quad g:=\Pw{10101}.
+\end{aligned}
+\]
+
+\paragraph{Step 1: determine length-$5$ cylinders in terms of $p$.}
+Since $|0-4|=4>3$, 3-dependence implies $X_0\perp X_4$, hence
+\[
+\PP(X_0=1, X_4=1)=p^2.
+\]
+The only allowed length-$5$ word starting and ending with $1$ is $\w{10101}$, hence $g=p^2$.
+
+Stationarity at length $4$ (Equation~\eqref{eq:stationarity-prefix-suffix}) gives the five linear
+constraints:
+\[
+\begin{aligned}
+\text{for }\w{0010}:&\quad a+b=e,\\ \text{for }\w{0100}:&\quad c=a+f,\\ \text{for }\w{0101}:&\quad d=b+g,\\ \text{for }\w{1001}:&\quad e=c,\\ \text{for }\w{1010}:&\quad f+g=d.
+\end{aligned}
+\]
+Finally, $X_0\perp X_4$ implies the endpoint constraints
+\[
+a+d = \PP(X_0=0,X_4=0)=(1-p)^2,\qquad e+f=\PP(X_0=1,X_4=0)=p(1-p).
+\]
+Solving these equations yields the explicit formulas:
+\[
+\begin{aligned}
+e=c&=1-2p,\\ b=f&=3p-1-p^2,\\ d&=3p-1,\\ g&=p^2,\\ a&=p^2-5p+2.
+\end{aligned}
+\]
+
+\paragraph{Step 2: a length-$6$ split identity forces a quadratic for $p$.}
+Because $\mathrm{dist}(\{0\},\{4,5\})=4>3$, we also have $X_0\perp (X_4,X_5)$ and therefore
+\[
+\PP(X_0=1, X_4X_5=\w{01})
+  = \PP(X_0=1)\,\PP(X_4X_5=\w{01})
+  = p\,P(\w{01})
+  = p^2.
+\]
+The event $\{X_0=1, X_4X_5=\w{01}\}$ is the disjoint union of the two length-$6$ cylinders
+\[
+\w{100101},\quad \w{101001},
+\]
+so
+\[
+\Pw{100101}+\Pw{101001}=p^2.
+\]
+In the MIS SFT, each of these length-$6$ words is a \emph{unique} extension of a length-$5$ word:
+$\w{100101}$ is the unique length-$6$ word with suffix $\w{00101}$, and $\w{101001}$ is the unique
+length-$6$ word with prefix $\w{10100}$.  Hence
+\[
+\Pw{100101}=\Pw{00101}=b,\qquad \Pw{101001}=\Pw{10100}=f=b,
+\]
+so $2b=p^2$.  Using $b=3p-1-p^2$ gives
+\[
+2(3p-1-p^2)=p^2,\qquad\text{i.e.}\qquad 3p^2-6p+2=0.
+\]
+Since $p\in[1/3,1/2]$, the only admissible root is
+\[
+p_\star = 1-\frac{1}{\sqrt3}.
+\]
+
+\paragraph{Step 3: one length-$9$ cylinder gets two incompatible values.}
+From marginalization,
+\[
+\Pw{010100100}=\Pw{10100100}
+\]
+(because $\w{110100100}$ is forbidden).
+
+Apply the split identity (Lemma~\ref{lem:split-identity}) to $\w{010100100}$ with split $1+3+5$:
+\[
+\Pw{010100100} = \PP(X_0=0)\,\Pw{00100} = (1-p)(p^2-5p+2).
+\]
+
+Next compute $\Pw{10100100}$ directly.
+Among allowed words of the form $\w{1\_\_\_0100}$ there are exactly two:
+\[
+\w{10010100},\qquad \w{10100100}.
+\]
+Hence, by $X_0\perp (X_4,\dots,X_7)$,
+\[
+\Pw{10010100}+\Pw{10100100} = \PP(X_0=1)\,P(\w{0100}) = p\,P(\w{0100}) = p(1-2p).
+\]
+Also, $\w{10010100}$ is the unique allowed word with prefix $\w{100}$ and suffix $\w{00}$, so
+the split $3+3+2$ gives
+\[
+\Pw{10010100}=\Pw{100}\,\Pw{00} = (1-2p)^2.
+\]
+Therefore
+\[
+\Pw{10100100} = p(1-2p) - (1-2p)^2 = (1-2p)(3p-1).
+\]
+
+So we get two expressions for the same cylinder:
+\[
+\Pw{010100100}=(1-p)(p^2-5p+2),\qquad
+\Pw{010100100}=(1-2p)(3p-1).
+\]
+At $p=p_\star=1-1/\sqrt3$, these are
+\[
+1-\frac{5\sqrt3}{9}
+\quad\text{and}\quad
+-4+\frac{7\sqrt3}{3},
+\]
+whose difference is
+\[
+\left(-4+\frac{7\sqrt3}{3}\right)-\left(1-\frac{5\sqrt3}{9}\right)
+= -5+\frac{26\sqrt3}{9}\neq 0.
+\]
+Contradiction.
+\end{proof}
+
+\subsection{No stationary 4-dependent MIS}
+
+\begin{proposition}
+\label{prop:no-k4}
+There is no stationary 4-dependent MIS process on $\Z$.
+\end{proposition}
+
+\begin{proof}
+Assume $k=4$ and write $p=\PP(X_0=1)$.
+As above, $P(\w{00})=1-2p$.
+
+\paragraph{Step 1: two forced cylinders.}
+We show that 4-dependence forces the exact formulas
+\[
+\Pw{10100} = \frac{p^2}{2},\qquad \Pw{00100} = 1-2p-\frac{p^2}{2}.
+\]
+
+First, note that the word $\w{10100}$ uniquely extends to the length-$7$ word $\w{1010010}$, so
+\[
+\Pw{10100}=\Pw{1010010}.
+\]
+Set
+\[
+b:=\Pw{0010100}.
+\]
+\emph{Claim A: $\Pw{10100}=p^2/2$.}
+Split identities with gap $4$ give
+\[
+\Pw{0010101}=p(1-2p),\qquad \Pw{1010100}=p(1-2p).
+\]
+Hence stationarity yields
+\[
+\Pw{1001010}=\Pw{0010100}+\Pw{0010101}=b+p(1-2p),
+\]
+and
+\[
+\Pw{1010010}=\Pw{0101001}=\Pw{0010100}+\Pw{1010100}=b+p(1-2p),
+\]
+so $\Pw{1001010}=\Pw{1010010}$.
+Now split $1+4+2$ with $(X_0,X_5X_6)=(1,\w{10})$.
+The only allowed words are $\w{1001010}$ and $\w{1010010}$, thus
+\[
+\Pw{1001010}+\Pw{1010010}=p^2.
+\]
+By equality of the two summands, each is $p^2/2$, therefore
+\[
+\Pw{10100}=\Pw{1010010}=\frac{p^2}{2}.
+\]
+
+\emph{Claim B: $\Pw{00100}=1-2p-p^2/2$.}
+Again by unique extension, $\Pw{00100}=\Pw{0010010}$.
+From Claim A and $\Pw{1010010}=b+p(1-2p)$,
+\[
+b=\frac{p^2}{2}-p(1-2p)=\frac{5p^2}{2}-p.
+\]
+Now split $1+4+2$ with $(X_0,X_5X_6)=(0,\w{00})$:
+the only allowed words are $\w{0010100}$ and $\w{0100100}$, so
+\[
+b+\Pw{0100100}=(1-p)\Pw{00}=(1-p)(1-2p),
+\]
+hence $\Pw{0100100}=1-2p-p^2/2$.
+Finally stationarity gives
+\[
+\Pw{0010010}=\Pw{1001001}=\Pw{0100100},
+\]
+therefore
+\[
+\Pw{00100}=\Pw{0010010}=1-2p-\frac{p^2}{2}.
+\]
+
+Moreover, 4-dependence applied to the split $2+4+2=8$ and the SFT unique-middle fact
+\[
+\w{00}\_\_\_\_\w{00} \text{is allowed only with middle }\w{1001}
+\]
+forces
+\[
+\Pw{00100100} = \Pw{00}^2 = (1-2p)^2.
+\]
+
+\paragraph{Step 2: a length-$14$ word identity gives $h(p)=0$.}
+Let
+\[
+u:=\w{00100100100100}.
+\]
+This word admits two decompositions with the same unique middle word $\w{1001}$:
+\[
+\w{00100},\w{1001},\w{00100}
+\qquad\text{and}\qquad
+\w{00},\w{1001},\w{00100100}.
+\]
+Applying the split identity (gap $4$) in each decomposition gives
+\[
+\Pw{00100100100100} = \Pw{00100}^2 = \Pw{00}\,\Pw{00100100}.
+\]
+Substituting the forced expressions above yields a necessary polynomial identity $h(p)=0$, namely
+\[
+h(p):=\Pw{00100}^2 - \Pw{00}\,\Pw{00100100}
+=\frac{p(p^3+40p^2-36p+8)}{4}=0.
+\]
+
+\paragraph{Step 3: a length-$10$ solvability condition gives $g(p)=0$.}
+From Step~1 and 4-dependence:
+\begin{align*}
+\Pw{0010010010} &= (1-2p)^2, \tag{E1}\\
+\Pw{0101010100} &= (1-2p)(3p-1), \tag{E2}\\
+\Pw{0010010100}+\Pw{0101010100} &= (1-p)\,\Pw{10100} = (1-p)\frac{p^2}{2}, \tag{E3}\\
+\Pw{0010010010}+\Pw{0010010100} &= (1-p)\,\Pw{00100} = (1-p)\Bigl(1-2p-\frac{p^2}{2}\Bigr). \tag{E4}
+\end{align*}
+These are all short finite-word checks:
+\begin{itemize}[leftmargin=2em]
+  \item (E1) $\w{00100100}$ has unique two-step extension $\w{10}$.
+  \item (E2) split $4+4+2$ with $(x,y)=(\w{0101},\w{00})$ has unique allowed word $\w{0101010100}$,
+  and $\Pw{0101}=\Pw{101}=3p-1$.
+  \item (E3) split $1+4+5$ with $(\w{0},\w{10100})$ has exactly two allowed words:
+  $\w{0010010100},\w{0101010100}$.
+  \item (E4) split $5+4+1$ with $(\w{00100},\w{0})$ has exactly two allowed words:
+  $\w{0010010010},\w{0010010100}$.
+\end{itemize}
+
+Taking the linear combination $-(E1)+(E2)-(E3)+(E4)$ cancels all length-$10$ cylinders and yields
+\[
+g(p):=p^3-9p^2+6p-1=0,
+\]
+so any stationary 4-dependent MIS must satisfy this cubic constraint.
+
+\paragraph{Step 4: $g$ and $h$ are incompatible.}
+Let
+\[
+H(p):=4h(p)=p(p^3+40p^2-36p+8).
+\]
+Any putative process must satisfy
+\[
+g(p)=0,\qquad H(p)=0.
+\]
+Euclidean division gives
+\[
+H(p)=(p+49)g(p)+r(p),\qquad r(p):=399p^2-285p+49,
+\]
+\[
+2793\,g(p)=(7p-58)\,r(p)+(49-115p).
+\]
+Hence $g=H=0$ implies $r=0$, then $49-115p=0$, so $p=49/115$.
+But
+\[
+r(49/115)=\frac{49}{13225}\neq 0,
+\]
+contradiction.
+\end{proof}
+
+\subsection{No stationary 5-dependent MIS (computer-assisted, exact)}
+
+\begin{theorem}
+\label{thm:no-k5}
+There is no stationary 5-dependent MIS process on $\Z$.
+\end{theorem}
+
+\begin{proof}[Proof (with exact computation)]
+Assume $k=5$.
+Let
+\[
+p := \PP(X_0=1),\qquad t := \Pw{1010101}.
+\]
+The proof is a finite, exact contradiction about cylinder probabilities.
+Conceptually, stationarity and 5-dependence impose a large but \emph{linear} constraint system on
+finite-word probabilities; inconsistency of that system rules out the process.
+
+\paragraph{Complexity bookkeeping.}
+The MIS shift forbidding $\w{11}$ and $\w{000}$ has Fibonacci-many admissible words:
+the number of allowed length-$L$ words is $2,3,4,5,7,9,12,\dots$ (in particular, $12$ at $L=7$ and
+$1897$ at $L=25$).  The argument below uses only sparse split-row cancellations and exact
+polynomial algebra over $\mathbb{Q}$.
+
+\paragraph{Step 1: forced length-$7$ family.}
+Stationarity, the MIS constraint, and independence of $X_0$ and $X_6$ (distance $6>5$) determine an
+affine 2-parameter family of length-$7$ cylinder probabilities, parameterized by $(p,t)$.
+Concretely, the allowed length-$7$ words are the following $12$ words, with:
+\[
+\begin{aligned}
+\Pw{0010010}&=p^2-t,\\
+\Pw{0010100}&=-2p^2-7p+3t+3,\\
+\Pw{0010101}&=p^2+5p-2t-2,\\
+\Pw{0100100}&=p^2-t,\\
+\Pw{0100101}&=-p^2-2p+t+1,\\
+\Pw{0101001}&=-p^2-2p+t+1,\\
+\Pw{0101010}&=p^2+5p-t-2,\\
+\Pw{1001001}&=p^2-t,\\
+\Pw{1001010}&=-p^2-2p+t+1,\\
+\Pw{1010010}&=-p^2-2p+t+1,\\
+\Pw{1010100}&=p^2+5p-2t-2,\\
+\Pw{1010101}&=t.
+\end{aligned}
+\]
+(All other length-$7$ cylinders are $0$ because they are not MIS-admissible.)
+This small linear system is solved exactly and printed by \texttt{proof/scripts/prove\_k5\_impossible.py}.
+
+\paragraph{Step 2: two explicit compatibility certificates.}
+Starting from the forced length-$7$ family, we first extend exactly to length $15$.
+Now build two \emph{fixed} overdetermined split systems whose RHS is computed from these
+length-$15$ marginals:
+\begin{itemize}[leftmargin=2em]
+  \item length $16$: $151$ unknown cylinders, $727$ equations;
+  \item length $20$: $465$ unknown cylinders, $3002$ equations.
+\end{itemize}
+For a split row, write
+\[
+E_{m,x;n,y}:\quad
+\sum_{g\in\{0,1\}^5\;:\;xgy\text{ admissible}}\Pw{xgy}=\Pw{x}\Pw{y}.
+\]
+Every $E_{m,x;n,y}$ is one row of the corresponding fixed system.
+
+\emph{Certificate for $f(p,t)=0$ (length $16$).}
+In the length-$16$ system, consider
+\[
+\begin{aligned}
+\mathcal C_f:=\;&
+E_{1,\w{1};10,\w{0010100101}}
+-E_{3,\w{100};8,\w{10100101}}
++E_{5,\w{10100};6,\w{001001}}\\
+&-E_{5,\w{10100};6,\w{100101}}
++E_{6,\w{100100};5,\w{00101}}
++E_{8,\w{10100101};3,\w{101}}
+-E_{10,\w{1010010101};1,\w{1}}.
+\end{aligned}
+\]
+The left-hand side of $\mathcal C_f$ is an exact telescoping cancellation:
+there are $12$ split-word terms before cancellation and $0$ after cancellation.
+Hence the same signed combination of right-hand sides must vanish, giving
+\[
+f(p,t)=0.
+\]
+
+\emph{Certificate for $r(p,t)=0$ (length $20$).}
+In the length-$20$ system, consider
+\[
+\begin{aligned}
+\mathcal C_r:=\;&
+-E_{5,\w{00100};10,\w{1010010100}}
++E_{8,\w{00100100};7,\w{0010100}}\\
+&+E_{10,\w{0010010100};5,\w{10100}}
+-E_{13,\w{0010010100100};2,\w{00}}.
+\end{aligned}
+\]
+Again the left-hand side cancels exactly (here: $6$ split-word terms to $0$), so the signed RHS
+combination vanishes:
+\[
+r(p,t)=0.
+\]
+Thus Step~2 uses only sparse row-combination checks (certificates), not solving the
+$727\times 151$ or $3002\times 465$ fixed systems.
+
+Therefore any stationary 5-dependent MIS must satisfy
+\[
+\begin{aligned}
+f(p,t) &=
+-3p^4-20p^3+6p^2t-48p^2+30pt+45p-3t^2-12t-9,\\
+r(p,t) &=
+-16p^4+12p^2t+84p^2-60pt-60p+9t^2+21t+11.
+\end{aligned}
+\]
+Hence
+\[
+g(p,t):=3f(p,t)+r(p,t)
+=-25p^4-60p^3+30p^2t-60p^2+30pt+75p-15t-16
+\]
+must also vanish.
+
+\paragraph{Step 3: eliminate $t$.}
+The polynomial $g$ is linear in $t$, so one can solve explicitly:
+\[
+t=\frac{25 p^4+60 p^3+60 p^2-75 p+16}{15(2p^2+2p-1)}.
+\]
+Substituting this into $f$ and clearing denominators yields
+\[
+A(p)B(p)=0,
+\]
+where
+\[
+\begin{aligned}
+A(p)&=5p^4-355p^3+460p^2-200p+29,\\ B(p)&=5p^4-5p^3-5p^2+5p-1.
+\end{aligned}
+\]
+Hence any putative process must satisfy either $A(p)=0$ or $B(p)=0$.
+
+\paragraph{Step 4: a sparse length-$19/25$ certificate gives $q(p,t)=0$.}
+Set
+\[
+\begin{aligned}
+Y_{19}&:=\Pw{0010101010010010100},\\
+S_{25}&:=\Pw{0101010010101010010010100},\\
+A_{25}&:=\Pw{0010010010101010010010100},\\
+T_{25}&:=\Pw{0010010100101010010010100}.
+\end{aligned}
+\]
+From two length-$19$ split rows (supports of sizes $1$ and $2$):
+\[
+\Pw{0010101001010010100}=\Pw{00}\,\Pw{001010010100},
+\]
+\[
+\Pw{0010101001010010100}+Y_{19}
+=\Pw{0010101}\,\Pw{0010100},
+\]
+we get
+\[
+Y_{19}=\Pw{0010101}\,\Pw{0010100}-\Pw{00}\,\Pw{001010010100}.
+\]
+
+From two length-$25$ split rows (again supports of sizes $1$ and $2$):
+\[
+\Pw{0101010010101001010010100}
+=\Pw{01010100}\,\Pw{001010010100},
+\]
+\[
+\Pw{0101010010101001010010100}+S_{25}
+=\Pw{0101010010101}\,\Pw{0010100},
+\]
+we get
+\[
+S_{25}
+=\Pw{0101010010101}\,\Pw{0010100}
+-\Pw{01010100}\,\Pw{001010010100}.
+\]
+
+Now use the three length-$25$ rows (supports of sizes $2,2,1$):
+\[
+\begin{aligned}
+\text{(A)}\quad A_{25}+S_{25}&=\Pw{0}\,Y_{19}=(1-p)\,Y_{19},\\
+\text{(B)}\quad A_{25}+T_{25}&=\Pw{00100}\,\Pw{101010010010100},\\
+\text{(W)}\quad T_{25}&=\Pw{0010010100}^{\,2}.
+\end{aligned}
+\]
+Eliminating $A_{25},T_{25}$ gives
+\[
+(1-p)Y_{19}-S_{25}-\Pw{00100}\,\Pw{101010010010100}+\Pw{0010010100}^{\,2}=0.
+\]
+Substituting the formulas above for $Y_{19},S_{25}$ and the forced length-$15$ marginals
+yields a third compatibility polynomial
+\[
+\begin{aligned}
+q(p,t):={}&4p^6+64p^5-12p^4t+528p^4-240p^3t+80p^3+12p^2t^2\\
+&-576p^2t-552p^2+180pt^2+540pt+260p-4t^3-72t^2-108t-35=0.
+\end{aligned}
+\]
+
+\paragraph{Step 5: eliminate $t$ and compare univariate constraints.}
+From Step~3:
+\[
+A(p)B(p)=0.
+\]
+Substituting
+\[
+t=\frac{25 p^4+60 p^3+60 p^2-75 p+16}{15(2p^2+2p-1)}
+\]
+into $q$ gives
+\[
+q\bigl(p,t(p)\bigr)=
+\frac{P_{12}(p)}{3375(2p^2+2p-1)^3},
+\]
+where
+\[
+\begin{aligned}
+P_{12}(p):={}&500p^{12}-306000p^{11}+976500p^{10}+6273000p^9-11736300p^8-1616400p^7\\
+&+16300800p^6-13617000p^5+4003260p^4+377640p^3-541710p^2+129690p-10579.
+\end{aligned}
+\]
+Hence any putative process must satisfy $P_{12}(p)=0$ as well.
+Exact Euclidean-algorithm checks give
+\[
+\gcd(A,P_{12})=\gcd(B,P_{12})=1,
+\qquad
+\gcd\!\bigl(A,2p^2+2p-1\bigr)=\gcd\!\bigl(B,2p^2+2p-1\bigr)=1.
+\]
+So $A(p)B(p)=0$ and $P_{12}(p)=0$ are incompatible, contradiction.
+
+Therefore no stationary 5-dependent MIS can exist.
+\end{proof}
+
+\begin{corollary}[Threshold for MIS]
+\label{cor:mis-threshold}
+For MIS on $\Z$, stationary finite dependence is possible at range $6$ and impossible at range $5$.
+\end{corollary}
+
+\begin{proof}
+Combine Theorem~\ref{thm:upper-bound} with Theorem~\ref{thm:no-k5}.
+\end{proof}
+
+\section{\texorpdfstring{Weak 2-coloring (forbidden \w{000},\w{111}): threshold $k=3$}{Weak 2-coloring (forbidden 000,111): threshold k=3}}
+
+Call a binary process $(X_i)_{i\in\Z}$ a \emph{weak 2-coloring process} if it forbids
+\[
+\w{000},\qquad \w{111}.
+\]
+
+\begin{theorem}[Existence at dependence range $3$]
+\label{thm:weak2-exists-k3}
+There exists a stationary $3$-dependent weak 2-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Let $(C_i)_{i\in\Z}$ be the stationary $2$-dependent proper $3$-coloring from
+Theorem~\ref{thm:hl-colorings}, with values in $\{0,1,2\}$.
+Define
+\[
+Y_i := \mathbf 1\{C_i < C_{i+1}\}\in\{0,1\}.
+\]
+
+If $Y_i=Y_{i+1}=Y_{i+2}=1$, then
+\[
+C_i<C_{i+1}<C_{i+2}<C_{i+3},
+\]
+impossible in $\{0,1,2\}$.  So $\w{111}$ is forbidden.
+
+If $Y_i=Y_{i+1}=Y_{i+2}=0$, then
+\[
+C_i>C_{i+1}>C_{i+2}>C_{i+3},
+\]
+also impossible in $\{0,1,2\}$.  So $\w{000}$ is forbidden.
+
+Thus $Y$ is a weak 2-coloring process.
+It is stationary because it is a shift-commuting factor of $C$.
+
+For dependence, note $Y_i$ depends only on $(C_i,C_{i+1})$.
+Hence for index sets $A,B\subseteq\Z$, the $\sigma$-field generated by $(Y_i)_{i\in A}$ is
+contained in that generated by $(C_j)_{j\in A\cup(A+1)}$, and similarly for $B$.
+If $\mathrm{dist}(A,B)>3$, then $\mathrm{dist}(A\cup(A+1),B\cup(B+1))>2$.
+By $2$-dependence of $C$, these enlarged coordinate families are independent, so
+$(Y_i)$ is $3$-dependent.
+\end{proof}
+
+\begin{theorem}[No dependence range $2$]
+\label{thm:weak2-no-k2}
+There is no stationary $2$-dependent weak 2-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Suppose $X=(X_i)_{i\in\Z}$ is stationary, $2$-dependent, and forbids $\w{000},\w{111}$.
+Define a one-sided radius-$3$ local map $\Phi:\{0,1\}^4\to\{0,1\}$ by
+\[
+\Phi(u_0u_1u_2u_3) := \mathbf 1\!\left\{
+u_0u_1u_2u_3\in
+\{\w{0010},\w{0011},\w{1010},\w{1011},\w{1100}\}
+\right\}.
+\]
+Set
+\[
+M_i := \Phi(X_iX_{i+1}X_{i+2}X_{i+3}).
+\]
+So $M_i$ depends only on $(X_i,\dots,X_{i+3})$.
+
+We claim $M$ is always an MIS configuration (forbids $\w{11}$ and $\w{000}$) whenever $X$ forbids
+$\w{000},\w{111}$.
+This is a finite check on admissible source words:
+\begin{itemize}[leftmargin=2em]
+  \item among admissible length-$5$ words of $X$, none yields $M_iM_{i+1}=\w{11}$;
+  \item among admissible length-$6$ words of $X$, none yields $M_iM_{i+1}M_{i+2}=\w{000}$.
+\end{itemize}
+An explicit exhaustive verifier is included as
+\path{proof/scripts/prove_weak2_threshold.py}.
+
+Therefore $M$ is a stationary MIS process.
+Since $M_i$ uses the one-sided window $[i,i+3]$, a $k$-dependent input gives a $(k+3)$-dependent
+output; with $k=2$ this gives that $M$ is $5$-dependent.
+This contradicts Theorem~\ref{thm:no-k5} (no stationary $5$-dependent MIS).
+So no stationary $2$-dependent weak 2-coloring exists.
+\end{proof}
+
+\begin{corollary}[Exact threshold]
+\label{cor:weak2-threshold}
+For weak 2-coloring on $\Z$ (forbidden $\w{000},\w{111}$), finite dependence is possible at
+$k=3$ and impossible at $k\le 2$.
+\end{corollary}
+
+\begin{proof}
+Combine Theorems~\ref{thm:weak2-exists-k3} and~\ref{thm:weak2-no-k2}.
+Impossibility at $k\le 2$ follows since $k$-dependence is monotone in $k$
+(if a process is $k$-dependent, then it is $k'$-dependent for every $k'\ge k$).
+\end{proof}
+
+\section{\texorpdfstring{Greedy proper 3-coloring: threshold $k=6$}{Greedy proper 3-coloring: threshold k=6}}
+
+\begin{definition}[Greedy proper 3-coloring on $\Z$]
+A process $G=(G_i)_{i\in\Z}$ with values in $\{0,1,2\}$ is a \emph{greedy proper 3-coloring} if:
+\begin{itemize}[leftmargin=2em]
+  \item it is proper: $G_i\neq G_{i+1}$ for all $i$;
+  \item if $G_i=1$, then $G_{i-1}=0$ or $G_{i+1}=0$;
+  \item if $G_i=2$, then it has a $0$-neighbor and a $1$-neighbor:
+  \[
+  (G_{i-1}=0\ \text{or}\ G_{i+1}=0)\quad\text{and}\quad
+  (G_{i-1}=1\ \text{or}\ G_{i+1}=1).
+  \]
+\end{itemize}
+This is exactly the predicate \texttt{IsGreedyThreeColoring} in
+\path{FiniteDependence/API/Definitions.lean}.
+\end{definition}
+
+\begin{theorem}[Existence at dependence range $6$]
+\label{thm:greedy3-exists-k6}
+There exists a stationary $6$-dependent greedy proper $3$-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Let $X=(X_i)_{i\in\Z}$ be the stationary $3$-dependent weak $2$-coloring from
+Theorem~\ref{thm:weak2-exists-k3}, so $X$ forbids \w{000} and \w{111}.
+Define a local map $\Phi:\{0,1\}^4\to\{0,1,2\}$ by
+\[
+\Phi(u)=
+\begin{cases}
+2, & u\in\{\w{0010},\w{1011}\},\\
+1, & u\in\{\w{0110},\w{1001},\w{1010}\},\\
+0, & \text{otherwise},
+\end{cases}
+\]
+and set
+\[
+G_i := \Phi(X_iX_{i+1}X_{i+2}X_{i+3}).
+\]
+So $G_i$ depends only on the one-sided window $[i,i+3]$.
+
+A finite local check on admissible source windows (equivalently, the exhaustive
+\texttt{decide}-lemmas formalized in \path{FiniteDependence/Coloring/GreedyThree.lean})
+shows: whenever $X$ forbids \w{000},\w{111}, the output $G$ is always a greedy proper $3$-coloring.
+
+Stationarity is preserved by this shift-commuting local factor.
+For dependence, one-sided radius $3$ enlarges range by at most $3$, so from $3$-dependence of $X$
+we get $6$-dependence of $G$.
+\end{proof}
+
+\begin{theorem}[No dependence range $5$]
+\label{thm:greedy3-no-k5}
+There is no stationary $5$-dependent greedy proper $3$-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Suppose $G=(G_i)_{i\in\Z}$ is stationary, $5$-dependent, and a greedy proper $3$-coloring.
+Define a binary process
+\[
+M_i := \mathbf 1\{G_i=0\}.
+\]
+This is a sitewise factor, so $M$ is stationary and still $5$-dependent.
+
+Also $M$ is an MIS configuration:
+\begin{itemize}[leftmargin=2em]
+  \item no \w{11}: if $M_i=M_{i+1}=1$, then $G_i=G_{i+1}=0$, contradicting properness of $G$;
+  \item no \w{000}: if $M_i=M_{i+1}=M_{i+2}=0$, then $G_{i+1}\in\{1,2\}$.
+  The greedy condition at site $i+1$ forces a neighboring $0$, i.e. $G_i=0$ or $G_{i+2}=0$,
+  contradiction.
+\end{itemize}
+Hence $M$ is a stationary $5$-dependent MIS process, contradicting Theorem~\ref{thm:no-k5}.
+\end{proof}
+
+\begin{corollary}[Threshold for greedy proper $3$-colorings]
+\label{cor:greedy3-threshold}
+For greedy proper $3$-colorings on $\Z$, stationary finite dependence is possible at range $6$ and
+impossible at range $5$.
+\end{corollary}
+
+\begin{proof}
+Combine Theorems~\ref{thm:greedy3-exists-k6} and~\ref{thm:greedy3-no-k5}.
+\end{proof}
+
+\section{No stationary 1-dependent proper 3-coloring}
+
+\begin{theorem}
+\label{thm:no-k1-3coloring}
+There is no stationary $1$-dependent proper $3$-coloring process on $\Z$.
+\end{theorem}
+
+\begin{proof}
+Suppose $(C_i)_{i\in\Z}$ is stationary, proper, and $1$-dependent, with values in $\{0,1,2\}$.
+Define the ascent factor
+\[
+Y_i := \mathbf 1\{C_i<C_{i+1}\}\in\{0,1\}.
+\]
+Exactly as in the proof of Theorem~\ref{thm:weak2-exists-k3}, $Y$ forbids \w{000} and \w{111},
+so $Y$ is a weak $2$-coloring process, and $Y$ is stationary.
+
+For dependence (cut form), fix a cut index $i$.
+The past $\sigma$-field generated by $(Y_j)_{j\le i}$ is contained in
+$\sigma(C_j:j\le i+1)$, while the future $\sigma$-field generated by $(Y_j)_{j\ge i+3}$ is
+contained in $\sigma(C_j:j\ge i+3)$.
+By $1$-dependence of $C$ at cut $i+1$, these are independent.
+Hence $Y$ is $2$-dependent.
+
+So $Y$ is a stationary $2$-dependent weak $2$-coloring, contradicting
+Theorem~\ref{thm:weak2-no-k2}.
+\end{proof}
+
+\begin{corollary}[Threshold for proper $3$-colorings]
+\label{cor:3color-threshold}
+For proper $3$-colorings on $\Z$, stationary finite dependence is possible at range $2$ and
+impossible at range $1$.
+\end{corollary}
+
+\begin{proof}
+Combine Corollary~\ref{cor:api-coloring-existence} (the $3$-coloring existence part) with
+Theorem~\ref{thm:no-k1-3coloring}.
+\end{proof}
+
+\section{How to verify the computations}
+
+The $k=3$ and $k=4$ arguments above are now written as finite pen-and-paper derivations.
+Their scripts are optional independent audits.
+
+The $k=5$ argument remains genuinely computer-assisted.
+The script \texttt{prove\_k5\_impossible.py} now has two modes:
+\begin{itemize}[leftmargin=2em]
+  \item default mode: a rigorous exact-certificate check of the proof strategy in Steps~1--5:
+  it verifies Step~1 identities, builds the forced length-$15$ family exactly, verifies the
+  sparse Step~2 certificates by explicit LHS cancellation and exact RHS evaluation, verifies the
+  sparse Step~4 length-$19/25$ certificate and polynomial $q(p,t)$, then performs exact
+  univariate elimination/GCD checks showing incompatibility of $A(p)B(p)=0$ with $P_{12}(p)=0$;
+  \item \texttt{--full-audit}: an additional slower check that also rebuilds the large fixed
+  Step~2 systems (sizes $727\times 151$ and $3002\times 465$) before applying the same sparse
+  certificates.
+\end{itemize}
+
+\paragraph{Independent verification checklist.}
+For a minimal independent check of the final theorem:
+\begin{itemize}[leftmargin=2em]
+  \item verify the displayed split identities and algebra in Steps~2--4;
+  \item run \texttt{prove\_k5\_impossible.py} (default rigorous mode) and confirm it reproduces:
+  the $7$-row length-$16$ certificate $\mathcal C_f$ (LHS cancellation and RHS polynomial $f$),
+  the $4$-row length-$20$ certificate $\mathcal C_r$ (LHS cancellation and RHS polynomial $r$),
+  the identity $g=3f+r$,
+  the factorization $A(p)B(p)=0$ after eliminating $t$,
+  the sparse Step~4 polynomial $q(p,t)$,
+  the elimination numerator $P_{12}(p)$ from $q\bigl(p,t(p)\bigr)$,
+  and the exact checks $\gcd(A,P_{12})=\gcd(B,P_{12})=1$.
+  \item optionally run \texttt{prove\_k5\_impossible.py --full-audit} for the extra large-system
+  Step~2 rebuild check.
+\end{itemize}
+
+Run (from \texttt{proof/}):
+\begin{align*}
+&\texttt{uv run python scripts/prove\_weak2\_threshold.py}\\
+&\texttt{uv run --with sympy python scripts/prove\_k3\_impossible.py}\\
+&\texttt{uv run --with sympy python scripts/prove\_k4\_impossible.py}\\
+&\texttt{uv run --with sympy python scripts/prove\_k5\_impossible.py}\\
+&\texttt{uv run --with sympy python scripts/prove\_k5\_impossible.py --full-audit}
+\end{align*}
+
+\bibliographystyle{alpha}
+\bibliography{refs}
+
+\end{document}

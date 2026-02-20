@@ -45,7 +45,9 @@ jobs:
           # This repository does not define a `lake check-lint` driver.
           # Keep Lean build checks here, while linting can be handled in a separate workflow.
           lint: false
-          mk_all-check: true
+          # This repository maintains a curated top-level `FiniteDependence.lean`,
+          # not an auto-generated `mk_all` import file.
+          mk_all-check: false
 
       - name: Compile blueprint and documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26

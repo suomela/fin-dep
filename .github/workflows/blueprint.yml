@@ -49,6 +49,13 @@ jobs:
           # not an auto-generated `mk_all` import file.
           mk_all-check: false
 
+      - name: Provide `lakefile.toml` compatibility shim for docgen-action
+        run: |
+          cat > lakefile.toml << 'EOF'
+          name = "finiteDependence"
+          defaultTargets = ["FiniteDependence"]
+          EOF
+
       - name: Compile blueprint and documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
         with:

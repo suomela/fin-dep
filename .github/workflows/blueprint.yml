@@ -48,6 +48,8 @@ jobs:
           lint: false
           mk_all-check: false
           use-mathlib-cache: true
+          # Avoid uploading/restoring large `.lake` tarballs in this docs job.
+          use-github-cache: false
 
       - name: Provide `lakefile.toml` compatibility shim for docgen-action
         run: |
@@ -58,9 +60,14 @@ jobs:
 
       - name: Compile blueprint and documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26
+        env:
+          # Belt-and-suspenders: this action version keys conditionals off API_DOCS.
+          API_DOCS: "false"
         with:
           blueprint: true
           # Keep this workflow focused on blueprint output; API docs are handled elsewhere.
-          api-docs: false
+          api-docs: "false"
+          # Back-compat input name for this action's deprecation bridge.
+          api_docs: "false"
           # Skip Jekyll site build to reduce CI time.
-          build-page: false
+          build-page: "false"

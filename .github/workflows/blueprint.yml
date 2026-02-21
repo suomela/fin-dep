@@ -38,11 +38,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Lean toolchain (no duplicate build)
+      - name: Set up Lean toolchain
         uses: leanprover/lean-action@434f25c2f80ded67bba02502ad3a86f25db50709 # 2025-07-02
         with:
-          # The main Lean CI workflow already runs `lake build`.
-          # Here we only need Lean/Lake installed for blueprint declaration checks.
+          # We run a single targeted build below (`lake build FiniteDependence`)
+          # so checkdecls can resolve the declarations extracted from the blueprint.
           build: false
           test: false
           lint: false
@@ -57,6 +57,9 @@ jobs:
           name = "finiteDependence"
           defaultTargets = ["FiniteDependence"]
           EOF
+
+      - name: Build project root module for blueprint declaration checks
+        run: lake build FiniteDependence
 
       - name: Compile blueprint and documentation
         uses: leanprover-community/docgen-action@deed0cdc44dd8e5de07a300773eb751d33e32fc8 # 2025-10-26

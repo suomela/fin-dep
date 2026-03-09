@@ -6,8 +6,8 @@ namespace FiniteDependence.MIS
 /-!
 A small *computable* multivariate polynomial type in three variables over `ℚ`.
 
-We use this to run exact-algebra computations (via `native_decide`) without relying on
-Mathlib's (non-executable) polynomial implementations.
+We use this to run exact algebraic computations with a kernel-checked executable model,
+without relying on Mathlib's (non-executable) polynomial implementations.
 
 The variables are intended to be `p`, `t`, `u` in the k=5 proof search, but this file
 is purely algebraic.

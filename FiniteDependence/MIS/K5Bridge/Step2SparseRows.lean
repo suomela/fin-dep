@@ -1,4 +1,10 @@
-import FiniteDependence.MIS.K5Bridge.StepLemmas
+import FiniteDependence.MIS.K5Bridge.Step2SparseFilters1
+import FiniteDependence.MIS.K5Bridge.Step2SparseFilters2
+import FiniteDependence.MIS.K5Bridge.Step2SparseFilters3
+import FiniteDependence.MIS.K5Bridge.Step2SparseFilters4
+
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 20000000
 
 namespace FiniteDependence.MIS
 
@@ -19,6 +25,10 @@ private lemma is01_of_mem_allowedWords {L : Nat} {s : String} (hs : s ∈ K5Data
     Is01String s :=
   Is01String.of_mem_allowedWords (L := L) (s := s) hs
 
+private lemma mem_allowedWords_of_finset {L : Nat} {s : String} (hs : s ∈ allowedWordsFinset L) :
+    s ∈ K5Data.allowedWords L :=
+  (mem_allowedWordsFinset_iff (L := L) (s := s)).1 hs
+
 private lemma prob_prod_gap5_sum (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ)
     {m n : Nat} {x y : String}
@@ -33,6 +43,8 @@ private lemma prob_prod_gap5_sum (μ : Measure FiniteDependence.MIS.State) [IsPr
   have hyLen : y.length = n := length_of_mem_allowedWords (L := n) (s := y) hy
   exact prob_prod_gap5 (μ := μ) hstat hdep (m := m) (n := n) (x := x) (y := y) hx01 hy01 hxLen hyLen
 
+set_option maxHeartbeats 20000000 in
+set_option maxRecDepth 1000000 in
 theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
     let P : String → ℝ := fun s => FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) s)
@@ -41,16 +53,34 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
       P "100100" * P "00101" + P "10100101" * P "101" -
       P "1010010101" * P "1" = 0 := by
   let P : String → ℝ := fun s => FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) s)
+  have h1_mem : ("1" : String) ∈ K5Data.allowedWords 1 :=
+    mem_allowedWords_of_finset (by decide : ("1" : String) ∈ allowedWordsFinset 1)
+  have h0010100101_mem : ("0010100101" : String) ∈ K5Data.allowedWords 10 :=
+    mem_allowedWords_of_finset (by decide : ("0010100101" : String) ∈ allowedWordsFinset 10)
+  have h100_mem : ("100" : String) ∈ K5Data.allowedWords 3 :=
+    mem_allowedWords_of_finset (by decide : ("100" : String) ∈ allowedWordsFinset 3)
+  have h10100101_mem : ("10100101" : String) ∈ K5Data.allowedWords 8 :=
+    mem_allowedWords_of_finset (by decide : ("10100101" : String) ∈ allowedWordsFinset 8)
+  have h10100_mem : ("10100" : String) ∈ K5Data.allowedWords 5 :=
+    mem_allowedWords_of_finset (by decide : ("10100" : String) ∈ allowedWordsFinset 5)
+  have h001001_mem : ("001001" : String) ∈ K5Data.allowedWords 6 :=
+    mem_allowedWords_of_finset (by decide : ("001001" : String) ∈ allowedWordsFinset 6)
+  have h100101_mem : ("100101" : String) ∈ K5Data.allowedWords 6 :=
+    mem_allowedWords_of_finset (by decide : ("100101" : String) ∈ allowedWordsFinset 6)
+  have h100100_mem : ("100100" : String) ∈ K5Data.allowedWords 6 :=
+    mem_allowedWords_of_finset (by decide : ("100100" : String) ∈ allowedWordsFinset 6)
+  have h00101_mem : ("00101" : String) ∈ K5Data.allowedWords 5 :=
+    mem_allowedWords_of_finset (by decide : ("00101" : String) ∈ allowedWordsFinset 5)
+  have h101_mem : ("101" : String) ∈ K5Data.allowedWords 3 :=
+    mem_allowedWords_of_finset (by decide : ("101" : String) ∈ allowedWordsFinset 3)
+  have h1010010101_mem : ("1010010101" : String) ∈ K5Data.allowedWords 10 :=
+    mem_allowedWords_of_finset (by decide : ("1010010101" : String) ∈ allowedWordsFinset 10)
 
   have h1sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("1" : String) ∈ K5Data.allowedWords 1))
-      (hy := (by native_decide : ("0010100101" : String) ∈ K5Data.allowedWords 10))
-  have hS1 :
-      (allowedWordsFinset (1 + 5 + 10)).filter
-          (fun w => prefixOf w 1 = ("1" : String) ∧ suffixFrom w (1 + 5) = ("0010100101" : String)) =
-        ({("1001010010100101" : String), "1010010010100101"} : Finset String) := by
-    native_decide
+      (hx := h1_mem)
+      (hy := h0010100101_mem)
+  have hS1 := filter_1_0010100101_eq
   have h1 :
       P "1" * P "0010100101" =
         P "1001010010100101" + P "1010010010100101" := by
@@ -58,13 +88,9 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h2sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("100" : String) ∈ K5Data.allowedWords 3))
-      (hy := (by native_decide : ("10100101" : String) ∈ K5Data.allowedWords 8))
-  have hS2 :
-      (allowedWordsFinset (3 + 5 + 8)).filter
-          (fun w => prefixOf w 3 = ("100" : String) ∧ suffixFrom w (3 + 5) = ("10100101" : String)) =
-        ({("1001001010100101" : String), "1001010010100101"} : Finset String) := by
-    native_decide
+      (hx := h100_mem)
+      (hy := h10100101_mem)
+  have hS2 := filter_100_10100101_eq
   have h2 :
       P "100" * P "10100101" =
         P "1001001010100101" + P "1001010010100101" := by
@@ -72,26 +98,18 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h3sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("10100" : String) ∈ K5Data.allowedWords 5))
-      (hy := (by native_decide : ("001001" : String) ∈ K5Data.allowedWords 6))
-  have hS3 :
-      (allowedWordsFinset (5 + 5 + 6)).filter
-          (fun w => prefixOf w 5 = ("10100" : String) ∧ suffixFrom w (5 + 5) = ("001001" : String)) =
-        ({("1010010101001001" : String)} : Finset String) := by
-    native_decide
+      (hx := h10100_mem)
+      (hy := h001001_mem)
+  have hS3 := filter_10100_001001_eq
   have h3 :
       P "10100" * P "001001" = P "1010010101001001" := by
     simpa [P, hS3] using h3sum
 
   have h4sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("10100" : String) ∈ K5Data.allowedWords 5))
-      (hy := (by native_decide : ("100101" : String) ∈ K5Data.allowedWords 6))
-  have hS4 :
-      (allowedWordsFinset (5 + 5 + 6)).filter
-          (fun w => prefixOf w 5 = ("10100" : String) ∧ suffixFrom w (5 + 5) = ("100101" : String)) =
-        ({("1010010010100101" : String), "1010010100100101"} : Finset String) := by
-    native_decide
+      (hx := h10100_mem)
+      (hy := h100101_mem)
+  have hS4 := filter_10100_100101_eq
   have h4 :
       P "10100" * P "100101" =
         P "1010010010100101" + P "1010010100100101" := by
@@ -99,26 +117,18 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h5sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("100100" : String) ∈ K5Data.allowedWords 6))
-      (hy := (by native_decide : ("00101" : String) ∈ K5Data.allowedWords 5))
-  have hS5 :
-      (allowedWordsFinset (6 + 5 + 5)).filter
-          (fun w => prefixOf w 6 = ("100100" : String) ∧ suffixFrom w (6 + 5) = ("00101" : String)) =
-        ({("1001001010100101" : String)} : Finset String) := by
-    native_decide
+      (hx := h100100_mem)
+      (hy := h00101_mem)
+  have hS5 := filter_100100_00101_eq
   have h5 :
       P "100100" * P "00101" = P "1001001010100101" := by
     simpa [P, hS5] using h5sum
 
   have h6sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("10100101" : String) ∈ K5Data.allowedWords 8))
-      (hy := (by native_decide : ("101" : String) ∈ K5Data.allowedWords 3))
-  have hS6 :
-      (allowedWordsFinset (8 + 5 + 3)).filter
-          (fun w => prefixOf w 8 = ("10100101" : String) ∧ suffixFrom w (8 + 5) = ("101" : String)) =
-        ({("1010010100100101" : String), "1010010101010101"} : Finset String) := by
-    native_decide
+      (hx := h10100101_mem)
+      (hy := h101_mem)
+  have hS6 := filter_10100101_101_eq
   have h6 :
       P "10100101" * P "101" =
         P "1010010100100101" + P "1010010101010101" := by
@@ -126,13 +136,9 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h7sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("1010010101" : String) ∈ K5Data.allowedWords 10))
-      (hy := (by native_decide : ("1" : String) ∈ K5Data.allowedWords 1))
-  have hS7 :
-      (allowedWordsFinset (10 + 5 + 1)).filter
-          (fun w => prefixOf w 10 = ("1010010101" : String) ∧ suffixFrom w (10 + 5) = ("1" : String)) =
-        ({("1010010101001001" : String), "1010010101010101"} : Finset String) := by
-    native_decide
+      (hx := h1010010101_mem)
+      (hy := h1_mem)
+  have hS7 := filter_1010010101_1_eq
   have h7 :
       P "1010010101" * P "1" =
         P "1010010101001001" + P "1010010101010101" := by
@@ -147,22 +153,36 @@ theorem f_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
     ring
   simpa [P] using htarget
 
+set_option maxHeartbeats 20000000 in
+set_option maxRecDepth 1000000 in
 theorem r_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
     let P : String → ℝ := fun s => FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) s)
     (-(P "00100" * P "1010010100") + P "00100100" * P "0010100" +
       P "0010010100" * P "10100" - P "0010010100100" * P "00") = 0 := by
   let P : String → ℝ := fun s => FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) s)
+  have h00100_mem : ("00100" : String) ∈ K5Data.allowedWords 5 :=
+    mem_allowedWords_of_finset (by decide : ("00100" : String) ∈ allowedWordsFinset 5)
+  have h1010010100_mem : ("1010010100" : String) ∈ K5Data.allowedWords 10 :=
+    mem_allowedWords_of_finset (by decide : ("1010010100" : String) ∈ allowedWordsFinset 10)
+  have h00100100_mem : ("00100100" : String) ∈ K5Data.allowedWords 8 :=
+    mem_allowedWords_of_finset (by decide : ("00100100" : String) ∈ allowedWordsFinset 8)
+  have h0010100_mem : ("0010100" : String) ∈ K5Data.allowedWords 7 :=
+    mem_allowedWords_of_finset (by decide : ("0010100" : String) ∈ allowedWordsFinset 7)
+  have h0010010100_mem : ("0010010100" : String) ∈ K5Data.allowedWords 10 :=
+    mem_allowedWords_of_finset (by decide : ("0010010100" : String) ∈ allowedWordsFinset 10)
+  have h10100_mem : ("10100" : String) ∈ K5Data.allowedWords 5 :=
+    mem_allowedWords_of_finset (by decide : ("10100" : String) ∈ allowedWordsFinset 5)
+  have h0010010100100_mem : ("0010010100100" : String) ∈ K5Data.allowedWords 13 :=
+    mem_allowedWords_of_finset (by decide : ("0010010100100" : String) ∈ allowedWordsFinset 13)
+  have h00_mem : ("00" : String) ∈ K5Data.allowedWords 2 :=
+    mem_allowedWords_of_finset (by decide : ("00" : String) ∈ allowedWordsFinset 2)
 
   have h1sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("00100" : String) ∈ K5Data.allowedWords 5))
-      (hy := (by native_decide : ("1010010100" : String) ∈ K5Data.allowedWords 10))
-  have hS1 :
-      (allowedWordsFinset (5 + 5 + 10)).filter
-          (fun w => prefixOf w 5 = ("00100" : String) ∧ suffixFrom w (5 + 5) = ("1010010100" : String)) =
-        ({("00100100101010010100" : String), "00100101001010010100"} : Finset String) := by
-    native_decide
+      (hx := h00100_mem)
+      (hy := h1010010100_mem)
+  have hS1 := filter_00100_1010010100_eq
   have h1 :
       P "00100" * P "1010010100" =
         P "00100100101010010100" + P "00100101001010010100" := by
@@ -170,26 +190,18 @@ theorem r_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h2sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("00100100" : String) ∈ K5Data.allowedWords 8))
-      (hy := (by native_decide : ("0010100" : String) ∈ K5Data.allowedWords 7))
-  have hS2 :
-      (allowedWordsFinset (8 + 5 + 7)).filter
-          (fun w => prefixOf w 8 = ("00100100" : String) ∧ suffixFrom w (8 + 5) = ("0010100" : String)) =
-        ({("00100100101010010100" : String)} : Finset String) := by
-    native_decide
+      (hx := h00100100_mem)
+      (hy := h0010100_mem)
+  have hS2 := filter_00100100_0010100_eq
   have h2 :
       P "00100100" * P "0010100" = P "00100100101010010100" := by
     simpa [P, hS2] using h2sum
 
   have h3sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("0010010100" : String) ∈ K5Data.allowedWords 10))
-      (hy := (by native_decide : ("10100" : String) ∈ K5Data.allowedWords 5))
-  have hS3 :
-      (allowedWordsFinset (10 + 5 + 5)).filter
-          (fun w => prefixOf w 10 = ("0010010100" : String) ∧ suffixFrom w (10 + 5) = ("10100" : String)) =
-        ({("00100101001001010100" : String), "00100101001010010100"} : Finset String) := by
-    native_decide
+      (hx := h0010010100_mem)
+      (hy := h10100_mem)
+  have hS3 := filter_0010010100_10100_eq
   have h3 :
       P "0010010100" * P "10100" =
         P "00100101001001010100" + P "00100101001010010100" := by
@@ -197,13 +209,9 @@ theorem r_row_combination_zero (μ : Measure FiniteDependence.MIS.State) [IsProb
 
   have h4sum :=
     prob_prod_gap5_sum (μ := μ) hstat hdep
-      (hx := (by native_decide : ("0010010100100" : String) ∈ K5Data.allowedWords 13))
-      (hy := (by native_decide : ("00" : String) ∈ K5Data.allowedWords 2))
-  have hS4 :
-      (allowedWordsFinset (13 + 5 + 2)).filter
-          (fun w => prefixOf w 13 = ("0010010100100" : String) ∧ suffixFrom w (13 + 5) = ("00" : String)) =
-        ({("00100101001001010100" : String)} : Finset String) := by
-    native_decide
+      (hx := h0010010100100_mem)
+      (hy := h00_mem)
+  have hS4 := filter_0010010100100_00_eq
   have h4 :
       P "0010010100100" * P "00" = P "00100101001001010100" := by
     simpa [P, hS4] using h4sum

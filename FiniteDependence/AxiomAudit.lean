@@ -1,0 +1,14 @@
+import FiniteDependence.API.MainTheorems
+
+-- These should print just the standard axioms [propext, Classical.choice, Quot.sound]
+#print axioms FiniteDependence.isKDependentCut_iff_isKDependentNoncontigConfig
+#print axioms FiniteDependence.exists_stationary_oneDependent_fourColoring
+#print axioms FiniteDependence.exists_stationary_twoDependent_threeColoring
+#print axioms FiniteDependence.exists_stationary_threeDependent_weakTwoColoring
+#print axioms FiniteDependence.exists_stationary_sixDependent_greedyThreeColoring
+#print axioms FiniteDependence.exists_stationary_sixDependent_MIS
+#print axioms FiniteDependence.not_exists_stationary_zeroDependent_fourColoring
+#print axioms FiniteDependence.not_exists_stationary_oneDependent_threeColoring
+#print axioms FiniteDependence.not_exists_stationary_twoDependent_weakTwoColoring
+#print axioms FiniteDependence.not_exists_stationary_fiveDependent_greedyThreeColoring
+#print axioms FiniteDependence.not_exists_stationary_fiveDependent_MIS

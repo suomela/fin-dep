@@ -1,4 +1,5 @@
 import FiniteDependence.MIS.K5Bridge.SparseCertStep2Data
+import FiniteDependence.MIS.K5Bridge.Step2SparseCertPolys
 import FiniteDependence.MIS.K5Bridge.Step2SparseRows
 import FiniteDependence.MIS.K5Bridge.Step3SparseCore
 import FiniteDependence.MIS.K5Elim
@@ -20,6 +21,10 @@ namespace Step2Sparse
 
 open Step3
 
+private lemma mem_allowedWords_of_finset {L : Nat} {s : String} (hs : s ∈ allowedWordsFinset L) :
+    s ∈ K5Data.allowedWords L :=
+  (mem_allowedWordsFinset_iff (L := L) (s := s)).1 hs
+
 private theorem prob_prefix_eq_eval_cert (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ)
     {m : Nat} {x : String} (hx : x ∈ K5Data.allowedWords m)
@@ -37,7 +42,9 @@ theorem prob_1_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityM
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_1) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 1) (x := "1") (hx := by native_decide) (hm := by decide) cert_1 cert_1_matches
+      (m := 1) (x := "1")
+      (hx := mem_allowedWords_of_finset (by decide : ("1" : String) ∈ allowedWordsFinset 1))
+      (hm := by decide) cert_1 cert_1_matches
 
 theorem prob_0010100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
@@ -45,7 +52,8 @@ theorem prob_0010100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsPro
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_0010100101) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 10) (x := "0010100101") (hx := by native_decide)
+      (m := 10) (x := "0010100101")
+      (hx := mem_allowedWords_of_finset (by decide : ("0010100101" : String) ∈ allowedWordsFinset 10))
       (hm := by decide) cert_0010100101 cert_0010100101_matches
 
 theorem prob_100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -54,7 +62,9 @@ theorem prob_100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilit
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 3) (x := "100") (hx := by native_decide) (hm := by decide) cert_100 cert_100_matches
+      (m := 3) (x := "100")
+      (hx := mem_allowedWords_of_finset (by decide : ("100" : String) ∈ allowedWordsFinset 3))
+      (hm := by decide) cert_100 cert_100_matches
 
 theorem prob_10100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
@@ -62,7 +72,8 @@ theorem prob_10100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProba
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_10100101) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 8) (x := "10100101") (hx := by native_decide)
+      (m := 8) (x := "10100101")
+      (hx := mem_allowedWords_of_finset (by decide : ("10100101" : String) ∈ allowedWordsFinset 8))
       (hm := by decide) cert_10100101 cert_10100101_matches
 
 theorem prob_10100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -71,7 +82,8 @@ theorem prob_10100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabil
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_10100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 5) (x := "10100") (hx := by native_decide)
+      (m := 5) (x := "10100")
+      (hx := mem_allowedWords_of_finset (by decide : ("10100" : String) ∈ allowedWordsFinset 5))
       (hm := by decide) cert_10100 cert_10100_matches
 
 theorem prob_001001_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -80,7 +92,8 @@ theorem prob_001001_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabi
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_001001) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 6) (x := "001001") (hx := by native_decide)
+      (m := 6) (x := "001001")
+      (hx := mem_allowedWords_of_finset (by decide : ("001001" : String) ∈ allowedWordsFinset 6))
       (hm := by decide) cert_001001 cert_001001_matches
 
 theorem prob_100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -89,7 +102,8 @@ theorem prob_100101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabi
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_100101) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 6) (x := "100101") (hx := by native_decide)
+      (m := 6) (x := "100101")
+      (hx := mem_allowedWords_of_finset (by decide : ("100101" : String) ∈ allowedWordsFinset 6))
       (hm := by decide) cert_100101 cert_100101_matches
 
 theorem prob_100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -98,7 +112,8 @@ theorem prob_100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabi
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_100100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 6) (x := "100100") (hx := by native_decide)
+      (m := 6) (x := "100100")
+      (hx := mem_allowedWords_of_finset (by decide : ("100100" : String) ∈ allowedWordsFinset 6))
       (hm := by decide) cert_100100 cert_100100_matches
 
 theorem prob_00101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -107,7 +122,8 @@ theorem prob_00101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabil
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_00101) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 5) (x := "00101") (hx := by native_decide)
+      (m := 5) (x := "00101")
+      (hx := mem_allowedWords_of_finset (by decide : ("00101" : String) ∈ allowedWordsFinset 5))
       (hm := by decide) cert_00101 cert_00101_matches
 
 theorem prob_101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -116,7 +132,8 @@ theorem prob_101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilit
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_101) := by
   simpa [cert_101, cert_101_matches] using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 3) (x := "101") (hx := by native_decide)
+      (m := 3) (x := "101")
+      (hx := mem_allowedWords_of_finset (by decide : ("101" : String) ∈ allowedWordsFinset 3))
       (hm := by decide) cert_101 cert_101_matches
 
 theorem prob_1010010101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -125,7 +142,8 @@ theorem prob_1010010101_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsPro
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_1010010101) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 10) (x := "1010010101") (hx := by native_decide)
+      (m := 10) (x := "1010010101")
+      (hx := mem_allowedWords_of_finset (by decide : ("1010010101" : String) ∈ allowedWordsFinset 10))
       (hm := by decide) cert_1010010101 cert_1010010101_matches
 
 theorem prob_00100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -134,7 +152,8 @@ theorem prob_00100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabil
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_00100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 5) (x := "00100") (hx := by native_decide)
+      (m := 5) (x := "00100")
+      (hx := mem_allowedWords_of_finset (by decide : ("00100" : String) ∈ allowedWordsFinset 5))
       (hm := by decide) cert_00100 cert_00100_matches
 
 theorem prob_1010010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -143,7 +162,8 @@ theorem prob_1010010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsPro
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_1010010100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 10) (x := "1010010100") (hx := by native_decide)
+      (m := 10) (x := "1010010100")
+      (hx := mem_allowedWords_of_finset (by decide : ("1010010100" : String) ∈ allowedWordsFinset 10))
       (hm := by decide) cert_1010010100 cert_1010010100_matches
 
 theorem prob_00100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -152,7 +172,8 @@ theorem prob_00100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProba
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_00100100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 8) (x := "00100100") (hx := by native_decide)
+      (m := 8) (x := "00100100")
+      (hx := mem_allowedWords_of_finset (by decide : ("00100100" : String) ∈ allowedWordsFinset 8))
       (hm := by decide) cert_00100100 cert_00100100_matches
 
 theorem prob_0010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -161,7 +182,8 @@ theorem prob_0010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbab
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_0010100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 7) (x := "0010100") (hx := by native_decide)
+      (m := 7) (x := "0010100")
+      (hx := mem_allowedWords_of_finset (by decide : ("0010100" : String) ∈ allowedWordsFinset 7))
       (hm := by decide) cert_0010100 cert_0010100_matches
 
 theorem prob_0010010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -170,7 +192,8 @@ theorem prob_0010010100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsPro
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_0010010100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 10) (x := "0010010100") (hx := by native_decide)
+      (m := 10) (x := "0010010100")
+      (hx := mem_allowedWords_of_finset (by decide : ("0010010100" : String) ∈ allowedWordsFinset 10))
       (hm := by decide) cert_0010010100 cert_0010010100_matches
 
 theorem prob_0010010100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -179,7 +202,8 @@ theorem prob_0010010100100_eq_eval (μ : Measure FiniteDependence.MIS.State) [Is
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_0010010100100) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 13) (x := "0010010100100") (hx := by native_decide)
+      (m := 13) (x := "0010010100100")
+      (hx := mem_allowedWords_of_finset (by decide : ("0010010100100" : String) ∈ allowedWordsFinset 13))
       (hm := by decide) cert_0010010100100 cert_0010010100100_matches
 
 theorem prob_00_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
@@ -188,7 +212,8 @@ theorem prob_00_eq_eval (μ : Measure FiniteDependence.MIS.State) [IsProbability
       Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_00) := by
   simpa using
     prob_prefix_eq_eval_cert (μ := μ) hstat hdep
-      (m := 2) (x := "00") (hx := by native_decide)
+      (m := 2) (x := "00")
+      (hx := mem_allowedWords_of_finset (by decide : ("00" : String) ∈ allowedWordsFinset 2))
       (hm := by decide) cert_00 cert_00_matches
 
 def fSparsePoly : Poly3.Poly :=
@@ -221,10 +246,31 @@ def rCompat (p t : ℝ) : ℝ :=
     9 * t ^ 2 + 21 * t + 11
 
 theorem fSparsePoly_eq : fSparsePoly = fExpectedPoly := by
-  native_decide
+  simp_rw [fSparsePoly, fExpectedPoly,
+    certPoly_1_eq,
+    certPoly_0010100101_eq,
+    certPoly_100_eq,
+    certPoly_10100101_eq,
+    certPoly_10100_eq,
+    certPoly_001001_eq,
+    certPoly_100101_eq,
+    certPoly_100100_eq,
+    certPoly_00101_eq,
+    certPoly_101_eq,
+    certPoly_1010010101_eq]
+  with_unfolding_all decide
 
 theorem rSparsePoly_eq : rSparsePoly = rExpectedPoly := by
-  native_decide
+  simp_rw [rSparsePoly, rExpectedPoly,
+    certPoly_00100_eq,
+    certPoly_1010010100_eq,
+    certPoly_00100100_eq,
+    certPoly_0010100_eq,
+    certPoly_0010010100_eq,
+    certPoly_10100_eq,
+    certPoly_0010010100100_eq,
+    certPoly_00_eq]
+  with_unfolding_all decide
 
 theorem eval_fSparsePoly_eq_zero (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :

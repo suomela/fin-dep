@@ -75,10 +75,10 @@ lemma allLen_base : AllLen (#["0", "1"] : Array String) 1 := by
   cases this with
   | inl h =>
       subst h
-      native_decide
+      decide
   | inr h =>
       subst h
-      native_decide
+      decide
 
 lemma allLen_extendWords {words : Array String} {L : Nat} (hwords : AllLen words L) :
     AllLen (K5Data.extendWords words) (L + 1) := by

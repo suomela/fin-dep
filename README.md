@@ -42,9 +42,21 @@ lake exe cache get
 lake build
 ```
 
+You can also use `leanchecker` to ensure that there is no "environment hacking":
+
+```sh
+lake env leanchecker --fresh
+```
+
+You can see what axioms are used in the main theorems by running:
+
+```sh
+lake build FiniteDependence.AxiomAudit
+```
+
 ## Notes
 
-This project is close to 100% work produced by AI tools. The new lower-bound proof was discovered by LLMs, and the formalization work was also done by LLMs, with minimal human guidance. We used primarily [Codex](https://openai.com/codex/) with [GPT-5.2](https://openai.com/index/introducing-gpt-5-2/) and [GPT-5.3-Codex](https://openai.com/index/introducing-gpt-5-3-codex/) in [this Docker sandbox](https://github.com/suomela/cursor-sandbox), where the agent could interact with Lean, Python, solver libraries, and other computational tools.
+This project is close to 100% work produced by AI tools. The new lower-bound proof was discovered by LLMs, and the formalization work was also done by LLMs, with minimal human guidance. We used primarily [Codex](https://openai.com/codex/) with GPT-5.2, GPT-5.3-Codex, and GPT-5.4 in [this Docker sandbox](https://github.com/suomela/cursor-sandbox), where the agent could interact with Lean, Python, solver libraries, and other computational tools.
 
 As a byproduct of this project, there is now also a Lean 4 formalization of the finitely dependent distributions by Holroyd and Liggett.
 

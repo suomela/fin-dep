@@ -96,7 +96,7 @@ lemma all01_base : All01 (#["0", "1"] : Array String) := by
       subst h
       intro c hc
       have h0 : ("0".toList) = ['0'] := by
-        native_decide
+        decide
       have hc0 : c = '0' := by
         have : c ∈ ['0'] := by simpa [h0] using hc
         simpa using this
@@ -105,7 +105,7 @@ lemma all01_base : All01 (#["0", "1"] : Array String) := by
       subst h
       intro c hc
       have h1 : ("1".toList) = ['1'] := by
-        native_decide
+        decide
       have hc1 : c = '1' := by
         have : c ∈ ['1'] := by simpa [h1] using hc
         simpa using this

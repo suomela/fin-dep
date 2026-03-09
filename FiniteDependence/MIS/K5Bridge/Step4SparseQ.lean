@@ -1,5 +1,6 @@
 import FiniteDependence.MIS.K5Bridge.Dist7
 import FiniteDependence.MIS.K5Bridge.Length25Rows
+import FiniteDependence.MIS.K5Bridge.Step4SparseQCerts
 import FiniteDependence.MIS.K5Bridge.Step4SparseWords
 
 namespace FiniteDependence.MIS
@@ -18,6 +19,10 @@ noncomputable section
 namespace Step4Sparse
 
 open Step3 Step2Sparse
+
+private lemma mem_allowedWords_of_finset {L : Nat} {s : String} (hs : s ∈ allowedWordsFinset L) :
+    s ∈ K5Data.allowedWords L :=
+  (mem_allowedWordsFinset_iff (L := L) (s := s)).1 hs
 
 /-- Step-4 compatibility polynomial from the length-19/25 sparse certificate. -/
 def qCompat (p t : ℝ) : ℝ :=
@@ -73,9 +78,10 @@ private theorem prob_00100_eq_formula (μ : Measure FiniteDependence.MIS.State) 
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
     FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00100") = (pVal μ) ^ 2 - tVal μ := by
   rcases dist7_selected_formulas (μ := μ) hstat hdep with ⟨h0010010, _h0010100, _h0010101, _h1010100⟩
-  have hx_mem : ("00100" : String) ∈ K5Data.allowedWords 5 := by native_decide
+  have hx_mem : ("00100" : String) ∈ K5Data.allowedWords 5 :=
+    mem_allowedWords_of_finset (by decide : ("00100" : String) ∈ allowedWordsFinset 5)
   have hx01 : Is01String ("00100" : String) := Is01String.of_mem_allowedWords (L := 5) hx_mem
-  have hxLen : ("00100" : String).length = 5 := by native_decide
+  have hxLen : ("00100" : String).length = 5 := by decide
   have hsum :
       FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00100") =
         ∑ w ∈ (allowedWordsFinset 7).filter (fun w => prefixOf w 5 = ("00100" : String)),
@@ -86,7 +92,7 @@ private theorem prob_00100_eq_formula (μ : Measure FiniteDependence.MIS.State) 
   have hS :
       (allowedWordsFinset 7).filter (fun w => prefixOf w 5 = ("00100" : String)) =
         ({("0010010" : String)} : Finset String) := by
-    native_decide
+    decide
   calc
     FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00100") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010010") := by
@@ -112,9 +118,10 @@ private theorem prob_00_eq_formula (μ : Measure FiniteDependence.MIS.State) [Is
     FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00") = 1 - 2 * pVal μ := by
   rcases dist7_selected_formulas (μ := μ) hstat hdep with
     ⟨h0010010, h0010100, h0010101, _h1010100⟩
-  have hx_mem : ("00" : String) ∈ K5Data.allowedWords 2 := by native_decide
+  have hx_mem : ("00" : String) ∈ K5Data.allowedWords 2 :=
+    mem_allowedWords_of_finset (by decide : ("00" : String) ∈ allowedWordsFinset 2)
   have hx01 : Is01String ("00" : String) := Is01String.of_mem_allowedWords (L := 2) hx_mem
-  have hxLen : ("00" : String).length = 2 := by native_decide
+  have hxLen : ("00" : String).length = 2 := by decide
   have hsum :
       FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00") =
         ∑ w ∈ (allowedWordsFinset 7).filter (fun w => prefixOf w 2 = ("00" : String)),
@@ -125,7 +132,7 @@ private theorem prob_00_eq_formula (μ : Measure FiniteDependence.MIS.State) [Is
   have hS :
       (allowedWordsFinset 7).filter (fun w => prefixOf w 2 = ("00" : String)) =
         ({("0010010" : String), "0010100", "0010101"} : Finset String) := by
-    native_decide
+    decide
   have hsum' :
       FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010010") +
@@ -140,9 +147,10 @@ private theorem prob_01010100_eq_formula (μ : Measure FiniteDependence.MIS.Stat
       (pVal μ) ^ 2 + 5 * pVal μ - 2 * tVal μ - 2 := by
   rcases dist7_selected_formulas (μ := μ) hstat hdep with
     ⟨_h0010010, _h0010100, _h0010101, h1010100⟩
-  have hx_mem : ("1010100" : String) ∈ K5Data.allowedWords 7 := by native_decide
+  have hx_mem : ("1010100" : String) ∈ K5Data.allowedWords 7 :=
+    mem_allowedWords_of_finset (by decide : ("1010100" : String) ∈ allowedWordsFinset 7)
   have hx01 : Is01String ("1010100" : String) := Is01String.of_mem_allowedWords (L := 7) hx_mem
-  have hxLen : ("1010100" : String).length = 7 := by native_decide
+  have hxLen : ("1010100" : String).length = 7 := by decide
   have hsuf :
       FiniteDependence.MIS.Model.prob μ (cylStr (a := (1 : ℤ)) "1010100") =
         ∑ w ∈ (allowedWordsFinset 8).filter (fun w => suffix1 w = ("1010100" : String)),
@@ -153,7 +161,7 @@ private theorem prob_01010100_eq_formula (μ : Measure FiniteDependence.MIS.Stat
   have hS :
       (allowedWordsFinset 8).filter (fun w => suffix1 w = ("1010100" : String)) =
         ({("01010100" : String)} : Finset String) := by
-    native_decide
+    decide
   have hsuf' :
       FiniteDependence.MIS.Model.prob μ (cylStr (a := (1 : ℤ)) "1010100") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "01010100") := by
@@ -170,7 +178,9 @@ private def poly_0010010100 : Poly3.Poly :=
 
 private theorem certPoly_0010010100_eq :
     certPoly cert_0010010100 = poly_0010010100 := by
-  native_decide
+  simpa [poly_0010010100, Step2Sparse.poly_0010010100] using
+    (Step2Sparse.certPoly_0010010100_eq :
+      certPoly cert_0010010100 = Step2Sparse.poly_0010010100)
 
 private theorem prob_0010010100_eq_formula (μ : Measure FiniteDependence.MIS.State)
     [IsProbabilityMeasure μ] (hstat : Stationary μ) (hdep : KDependent 5 μ) :
@@ -182,7 +192,8 @@ private theorem prob_0010010100_eq_formula (μ : Measure FiniteDependence.MIS.St
     simpa using
       prob_prefix_eq_eval_certPoly (μ := μ) hstat hdep
         (m := 10) (x := "0010010100")
-        (hx := by native_decide) (hm := by decide)
+        (hx := mem_allowedWords_of_finset (by decide : ("0010010100" : String) ∈ allowedWordsFinset 10))
+        (hm := by decide)
         (cert := cert_0010010100)
         (hmatch := cert_0010010100_matches)
   calc
@@ -202,10 +213,14 @@ private theorem prob_suf19_eq_formula (μ : Measure FiniteDependence.MIS.State) 
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010100") -
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "00") *
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "001010010100") := by
-  have h00_mem : ("00" : String) ∈ K5Data.allowedWords 2 := by native_decide
-  have h001010010100_mem : ("001010010100" : String) ∈ K5Data.allowedWords 12 := by native_decide
-  have h0010101_mem : ("0010101" : String) ∈ K5Data.allowedWords 7 := by native_decide
-  have h0010100_mem : ("0010100" : String) ∈ K5Data.allowedWords 7 := by native_decide
+  have h00_mem : ("00" : String) ∈ K5Data.allowedWords 2 :=
+    mem_allowedWords_of_finset (by decide : ("00" : String) ∈ allowedWordsFinset 2)
+  have h001010010100_mem : ("001010010100" : String) ∈ K5Data.allowedWords 12 :=
+    mem_allowedWords_of_finset (by decide : ("001010010100" : String) ∈ allowedWordsFinset 12)
+  have h0010101_mem : ("0010101" : String) ∈ K5Data.allowedWords 7 :=
+    mem_allowedWords_of_finset (by decide : ("0010101" : String) ∈ allowedWordsFinset 7)
+  have h0010100_mem : ("0010100" : String) ∈ K5Data.allowedWords 7 :=
+    mem_allowedWords_of_finset (by decide : ("0010100" : String) ∈ allowedWordsFinset 7)
   have h00_01 : Is01String ("00" : String) := Is01String.of_mem_allowedWords (L := 2) h00_mem
   have h001010010100_01 : Is01String ("001010010100" : String) :=
     Is01String.of_mem_allowedWords (L := 12) h001010010100_mem
@@ -218,12 +233,12 @@ private theorem prob_suf19_eq_formula (μ : Measure FiniteDependence.MIS.State) 
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010101001010010100") := by
     have hsplit := prob_prod_gap5 (μ := μ) hstat hdep
       (m := 2) (n := 12) (x := ("00" : String)) (y := ("001010010100" : String))
-      h00_01 h001010010100_01 (by native_decide) (by native_decide)
+      h00_01 h001010010100_01 (by decide) (by decide)
     have hS :
         (allowedWordsFinset (2 + 5 + 12)).filter
             (fun w => prefixOf w 2 = ("00" : String) ∧ suffixFrom w (2 + 5) = ("001010010100" : String)) =
           ({("0010101001010010100" : String)} : Finset String) := by
-      native_decide
+      simpa using filter19_anchor_eq
     simpa [hS] using hsplit
 
   have hrow_edge :
@@ -233,12 +248,12 @@ private theorem prob_suf19_eq_formula (μ : Measure FiniteDependence.MIS.State) 
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010101010010010100") := by
     have hsplit := prob_prod_gap5 (μ := μ) hstat hdep
       (m := 7) (n := 7) (x := ("0010101" : String)) (y := ("0010100" : String))
-      h0010101_01 h0010100_01 (by native_decide) (by native_decide)
+      h0010101_01 h0010100_01 (by decide) (by decide)
     have hS :
         (allowedWordsFinset (7 + 5 + 7)).filter
             (fun w => prefixOf w 7 = ("0010101" : String) ∧ suffixFrom w (7 + 5) = ("0010100" : String)) =
           ({("0010101001010010100" : String), "0010101010010010100"} : Finset String) := by
-      native_decide
+      simpa using filter19_edge_eq
     simpa [hS, add_assoc, add_left_comm, add_comm] using hsplit
 
   linarith [hrow_edge, hrow_anchor]
@@ -250,10 +265,14 @@ private theorem prob_s25_eq_formula (μ : Measure FiniteDependence.MIS.State) [I
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010100") -
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "01010100") *
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "001010010100") := by
-  have h01010100_mem : ("01010100" : String) ∈ K5Data.allowedWords 8 := by native_decide
-  have h001010010100_mem : ("001010010100" : String) ∈ K5Data.allowedWords 12 := by native_decide
-  have h0101010010101_mem : ("0101010010101" : String) ∈ K5Data.allowedWords 13 := by native_decide
-  have h0010100_mem : ("0010100" : String) ∈ K5Data.allowedWords 7 := by native_decide
+  have h01010100_mem : ("01010100" : String) ∈ K5Data.allowedWords 8 :=
+    mem_allowedWords_of_finset (by decide : ("01010100" : String) ∈ allowedWordsFinset 8)
+  have h001010010100_mem : ("001010010100" : String) ∈ K5Data.allowedWords 12 :=
+    mem_allowedWords_of_finset (by decide : ("001010010100" : String) ∈ allowedWordsFinset 12)
+  have h0101010010101_mem : ("0101010010101" : String) ∈ K5Data.allowedWords 13 :=
+    mem_allowedWords_of_finset (by decide : ("0101010010101" : String) ∈ allowedWordsFinset 13)
+  have h0010100_mem : ("0010100" : String) ∈ K5Data.allowedWords 7 :=
+    mem_allowedWords_of_finset (by decide : ("0010100" : String) ∈ allowedWordsFinset 7)
   have h01010100_01 : Is01String ("01010100" : String) :=
     Is01String.of_mem_allowedWords (L := 8) h01010100_mem
   have h001010010100_01 : Is01String ("001010010100" : String) :=
@@ -268,12 +287,12 @@ private theorem prob_s25_eq_formula (μ : Measure FiniteDependence.MIS.State) [I
         FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0101010010101001010010100") := by
     have hsplit := prob_prod_gap5 (μ := μ) hstat hdep
       (m := 8) (n := 12) (x := ("01010100" : String)) (y := ("001010010100" : String))
-      h01010100_01 h001010010100_01 (by native_decide) (by native_decide)
+      h01010100_01 h001010010100_01 (by decide) (by decide)
     have hS :
         (allowedWordsFinset (8 + 5 + 12)).filter
             (fun w => prefixOf w 8 = ("01010100" : String) ∧ suffixFrom w (8 + 5) = ("001010010100" : String)) =
           ({("0101010010101001010010100" : String)} : Finset String) := by
-      native_decide
+      simpa using filter25_anchor_eq
     simpa [hS] using hsplit
 
   have hrow_edge :
@@ -283,12 +302,12 @@ private theorem prob_s25_eq_formula (μ : Measure FiniteDependence.MIS.State) [I
           FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0101010010101010010010100") := by
     have hsplit := prob_prod_gap5 (μ := μ) hstat hdep
       (m := 13) (n := 7) (x := ("0101010010101" : String)) (y := ("0010100" : String))
-      h0101010010101_01 h0010100_01 (by native_decide) (by native_decide)
+      h0101010010101_01 h0010100_01 (by decide) (by decide)
     have hS :
         (allowedWordsFinset (13 + 5 + 7)).filter
             (fun w => prefixOf w 13 = ("0101010010101" : String) ∧ suffixFrom w (13 + 5) = ("0010100" : String)) =
           ({("0101010010101001010010100" : String), "0101010010101010010010100"} : Finset String) := by
-      native_decide
+      simpa using filter25_edge_eq
     simpa [hS, add_assoc, add_left_comm, add_comm] using hsplit
 
   linarith [hrow_edge, hrow_anchor]

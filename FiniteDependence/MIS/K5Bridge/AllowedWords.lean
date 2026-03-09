@@ -71,12 +71,12 @@ lemma blockString_mem_allowedWords (ω : FiniteDependence.MIS.State) (a : ℤ) :
       | false =>
           have hstr : blockString a 1 ω = "0" := by
             simp [blockString, h0]
-            native_decide
+            decide
           simpa [K5Data.allowedWords, hstr]
       | true =>
           have hstr : blockString a 1 ω = "1" := by
             simp [blockString, h0]
-            native_decide
+            decide
           simpa [K5Data.allowedWords, hstr]
   | succ n ih =>
       -- Step: `allowedWords (n+2) = extendWords (allowedWords (n+1))`.
@@ -114,7 +114,7 @@ lemma blockString_mem_allowedWords (ω : FiniteDependence.MIS.State) (a : ℤ) :
                       simpa using hlast
                     have : blockString a 1 ω = "0" := by
                       simp [blockString, hlast0]
-                      native_decide
+                      decide
                     simpa [s] using this
                   -- Split on the next bit; `extensions s` contains both options.
                   cases hnext : ω.1 (a + 1) with
@@ -123,13 +123,13 @@ lemma blockString_mem_allowedWords (ω : FiniteDependence.MIS.State) (a : ℤ) :
                       -- Everything is now concrete.
                       simpa [hs0, hsn, hc] using
                         (by
-                          native_decide :
+                          decide :
                             ("0".push '0') ∈ (K5Data.extensions "0"))
                   | true =>
                       have hc : cNext = '1' := by simp [cNext, hnext]
                       simpa [hs0, hsn, hc] using
                         (by
-                          native_decide :
+                          decide :
                             ("0".push '1') ∈ (K5Data.extensions "0"))
               | succ n =>
                   -- Now `s` has length ≥ 2; inspect the previous bit `ω[a+(n-1)]`.

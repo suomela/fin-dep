@@ -116,7 +116,7 @@ theorem prob_10101_eq_p2 (μ : Measure State) [IsProbabilityMeasure μ]
   have hsep :
       ∀ i : Fin 1, ∀ j : Fin 1,
         Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
 
   -- Independence gives factorization of the endpoint event.
   have hind :
@@ -272,7 +272,7 @@ theorem prob_eq_u0010 (μ : Measure State) [IsProbabilityMeasure μ] (hstat : St
 
   -- Expand the union probability as a sum (disjoint union).
   have hne : w00100 ≠ w00101 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w00100 ∪ cyl 0 w00101) =
       prob μ (cyl 0 w00100) + prob μ (cyl 0 w00101) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -400,7 +400,7 @@ theorem prob_eq_u0100 (μ : Measure State) [IsProbabilityMeasure μ] (hstat : St
       _ = prob μ (cyl 1 u0100) := by simpa using hstat4.symm
       _ = prob μ (cyl 0 w00100 ∪ cyl 0 w10100) := by simpa [cyl_succ_u0100_eq_union]
   have hne : w00100 ≠ w10100 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w00100 ∪ cyl 0 w10100) =
       prob μ (cyl 0 w00100) + prob μ (cyl 0 w10100) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -525,7 +525,7 @@ theorem prob_eq_u0101 (μ : Measure State) [IsProbabilityMeasure μ] (hstat : St
       _ = prob μ (cyl 1 u0101) := by simpa using hstat4.symm
       _ = prob μ (cyl 0 w00101 ∪ cyl 0 w10101) := by simpa [cyl_succ_u0101_eq_union]
   have hne : w00101 ≠ w10101 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w00101 ∪ cyl 0 w10101) =
       prob μ (cyl 0 w00101) + prob μ (cyl 0 w10101) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -744,7 +744,7 @@ theorem prob_eq_u1010 (μ : Measure State) [IsProbabilityMeasure μ] (hstat : St
       _ = prob μ (cyl 1 u1010) := by simpa using hstat4.symm
       _ = prob μ (cyl 0 w01010) := by simpa [cyl_succ_u1010_eq]
   have hne : w10100 ≠ w10101 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w10100 ∪ cyl 0 w10101) =
       prob μ (cyl 0 w10100) + prob μ (cyl 0 w10101) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -907,7 +907,7 @@ theorem prob_b0 (μ : Measure State) [IsProbabilityMeasure μ] :
           simp [block, b1, h0]
         simpa [cyl] using hb
   have hne : b0 ≠ b1 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 b0 ∪ cyl 0 b1) = prob μ (cyl 0 b0) + prob μ (cyl 0 b1) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
   have : (1 : ℝ) = prob μ (cyl 0 b0) + prob μ (cyl 0 b1) := by
@@ -924,7 +924,7 @@ theorem prob_endpoints00 (μ : Measure State) [IsProbabilityMeasure μ]
   have hsep :
       ∀ i : Fin 1, ∀ j : Fin 1,
         Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
   have hind :
       prob μ (cyl 0 b0 ∩ cyl 4 b0) = prob μ (cyl 0 b0) * prob μ (cyl 4 b0) := by
     simpa using
@@ -938,7 +938,7 @@ theorem prob_endpoints00 (μ : Measure State) [IsProbabilityMeasure μ]
   -- translate the endpoint event to a disjoint union of length-5 cylinders.
   have hset : cyl 0 b0 ∩ cyl 4 b0 = cyl 0 w00100 ∪ cyl 0 w01010 := endpoints00_eq_union
   have hne : w00100 ≠ w01010 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w00100 ∪ cyl 0 w01010) =
       prob μ (cyl 0 w00100) + prob μ (cyl 0 w01010) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -963,7 +963,7 @@ theorem prob_endpoints10 (μ : Measure State) [IsProbabilityMeasure μ]
   have hsep :
       ∀ i : Fin 1, ∀ j : Fin 1,
         Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
   have hind :
       prob μ (cyl 0 b1 ∩ cyl 4 b0) = prob μ (cyl 0 b1) * prob μ (cyl 4 b0) := by
     simpa using
@@ -976,7 +976,7 @@ theorem prob_endpoints10 (μ : Measure State) [IsProbabilityMeasure μ]
 
   have hset : cyl 0 b1 ∩ cyl 4 b0 = cyl 0 w10010 ∪ cyl 0 w10100 := endpoints10_eq_union
   have hne : w10010 ≠ w10100 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w10010 ∪ cyl 0 w10100) =
       prob μ (cyl 0 w10010) + prob μ (cyl 0 w10100) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -1367,7 +1367,7 @@ theorem quadratic_of_len6 (μ : Measure State) [IsProbabilityMeasure μ]
   have hsep :
       ∀ i : Fin 1, ∀ j : Fin 2,
         Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
   have hind :
       prob μ (cyl 0 b1 ∩ cyl 4 w01) = prob μ (cyl 0 b1) * prob μ (cyl 4 w01) := by
     simpa using
@@ -1397,7 +1397,7 @@ theorem quadratic_of_len6 (μ : Measure State) [IsProbabilityMeasure μ]
   -- Express the LHS as a disjoint union of the two compatible length-6 cylinders.
   have hset : cyl 0 b1 ∩ cyl 4 w01 = cyl 0 w100101 ∪ cyl 0 w101001 := endpoints1_last01_eq_union
   have hne : w100101 ≠ w101001 := by
-    native_decide
+    decide
   have hunion : prob μ (cyl 0 w100101 ∪ cyl 0 w101001) =
       prob μ (cyl 0 w100101) + prob μ (cyl 0 w101001) :=
     prob_union_cyl_of_ne (μ := μ) (a := 0) hne
@@ -1681,7 +1681,7 @@ lemma prob_w10100100_eq_prob_w010100100 (μ : Measure State) [IsProbabilityMeasu
           simpa [cyl, block, w110100100, w10100100, add_assoc, add_left_comm, add_comm] using this
         simpa [cyl] using hb
   have hne : w010100100 ≠ w110100100 := by
-    native_decide
+    decide
   have hunion :
       prob μ (cyl (-1) w010100100 ∪ cyl (-1) w110100100) =
         prob μ (cyl (-1) w010100100) + prob μ (cyl (-1) w110100100) :=
@@ -1773,7 +1773,7 @@ theorem star_identity (μ : Measure State) [IsProbabilityMeasure μ]
   have hsepA :
       ∀ i : Fin 3, ∀ j : Fin 2,
         Int.natAbs ((0 + Int.ofNat i.1) - (6 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
   have hindA :
       prob μ (cyl 0 w100 ∩ cyl 6 w00) = prob μ (cyl 0 w100) * prob μ (cyl 6 w00) := by
     simpa using
@@ -1786,7 +1786,7 @@ theorem star_identity (μ : Measure State) [IsProbabilityMeasure μ]
     simpa [cyl_w100_eq] using (rfl : prob μ (cyl 0 w100) = prob μ (cyl 0 w100))
   have h00 : prob μ (cyl 0 w00) = prob μ (cyl 0 w00100) + prob μ (cyl 0 w00101) := by
     have hne : w00100 ≠ w00101 := by
-      native_decide
+      decide
     have hunion :
         prob μ (cyl 0 w00100 ∪ cyl 0 w00101) =
           prob μ (cyl 0 w00100) + prob μ (cyl 0 w00101) :=
@@ -1815,7 +1815,7 @@ theorem star_identity (μ : Measure State) [IsProbabilityMeasure μ]
   have hsepB :
       ∀ i : Fin 1, ∀ j : Fin 4,
         Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-    native_decide
+    decide
   have hindB :
       prob μ (cyl 0 b1 ∩ cyl 4 u0100) = prob μ (cyl 0 b1) * prob μ (cyl 4 u0100) := by
     simpa using
@@ -1833,7 +1833,7 @@ theorem star_identity (μ : Measure State) [IsProbabilityMeasure μ]
   have hPsum : prob μ (cyl 0 w10010100) + prob μ (cyl 0 w10100100) = p * (1 - 2 * p) := by
     have hset : cyl 0 b1 ∩ cyl 4 u0100 = cyl 0 w10010100 ∪ cyl 0 w10100100 := cyl_b1_u0100_eq_union
     have hne : w10010100 ≠ w10100100 := by
-      native_decide
+      decide
     have hunion :
         prob μ (cyl 0 w10010100 ∪ cyl 0 w10100100) =
           prob μ (cyl 0 w10010100) + prob μ (cyl 0 w10100100) :=
@@ -1858,7 +1858,7 @@ theorem star_identity (μ : Measure State) [IsProbabilityMeasure μ]
     have hsep :
         ∀ i : Fin 1, ∀ j : Fin 5,
           Int.natAbs ((0 + Int.ofNat i.1) - (4 + Int.ofNat j.1)) > 3 := by
-      native_decide
+      decide
     have hind :
         prob μ (cyl 0 b0 ∩ cyl 4 w00100) = prob μ (cyl 0 b0) * prob μ (cyl 4 w00100) := by
       simpa using

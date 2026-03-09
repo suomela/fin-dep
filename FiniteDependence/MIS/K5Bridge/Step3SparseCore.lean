@@ -140,7 +140,7 @@ private theorem prob_dist7_word_eq_evalPoly (μ : Measure FiniteDependence.MIS.S
         (K5Data.allowedWords 7).toList =
           ["0010010", "0010100", "0010101", "0100100", "0100101", "0101001",
             "0101010", "1001001", "1001010", "1010010", "1010100", "1010101"] := by
-      native_decide
+      decide
     have hwList : w ∈ (K5Data.allowedWords 7).toList := by
       simpa using hw
     have : w ∈
@@ -516,7 +516,8 @@ def rowValidB : RowKind → Bool
 
 theorem allRows_rowValidB :
     allRows.all rowValidB = true := by
-  native_decide
+  set_option maxRecDepth 1000000 in
+    with_unfolding_all decide
 
 private lemma allRows_rowValidB_forall :
     ∀ r ∈ allRows, rowValidB r = true := by

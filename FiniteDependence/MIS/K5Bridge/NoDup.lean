@@ -181,7 +181,7 @@ lemma allowedWords_nodup (L : Nat) : (K5Data.allowedWords L).toList.Nodup := by
     | zero =>
         cases (hL rfl)
     | succ n =>
-        have hbase : ((#["0", "1"] : Array String).toList).Nodup := by native_decide
+        have hbase : ((#["0", "1"] : Array String).toList).Nodup := by decide
         -- `allowedWords (n+1) = iterate extendWords n base`.
         have hiter :=
           nodup_iterate_extendWords (words := (#["0", "1"] : Array String)) hbase n

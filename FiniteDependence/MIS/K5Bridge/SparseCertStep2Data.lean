@@ -80,24 +80,46 @@ def cert_0010010100100 : List (Nat × ℚ) :=
 def cert_00 : List (Nat × ℚ) :=
   [ (104, 1), (141, 1), (174, 1), (179, 1), (245, 1), (248, 1), (251, 1) ]
 
-theorem cert_1_matches : certificateMatches "1" cert_1 = true := by native_decide
-theorem cert_0010100101_matches : certificateMatches "0010100101" cert_0010100101 = true := by native_decide
-theorem cert_100_matches : certificateMatches "100" cert_100 = true := by native_decide
-theorem cert_10100101_matches : certificateMatches "10100101" cert_10100101 = true := by native_decide
-theorem cert_10100_matches : certificateMatches "10100" cert_10100 = true := by native_decide
-theorem cert_001001_matches : certificateMatches "001001" cert_001001 = true := by native_decide
-theorem cert_100101_matches : certificateMatches "100101" cert_100101 = true := by native_decide
-theorem cert_100100_matches : certificateMatches "100100" cert_100100 = true := by native_decide
-theorem cert_00101_matches : certificateMatches "00101" cert_00101 = true := by native_decide
-theorem cert_101_matches : certificateMatches "101" cert_101 = true := by native_decide
-theorem cert_1010010101_matches : certificateMatches "1010010101" cert_1010010101 = true := by native_decide
-theorem cert_00100_matches : certificateMatches "00100" cert_00100 = true := by native_decide
-theorem cert_1010010100_matches : certificateMatches "1010010100" cert_1010010100 = true := by native_decide
-theorem cert_00100100_matches : certificateMatches "00100100" cert_00100100 = true := by native_decide
-theorem cert_0010100_matches : certificateMatches "0010100" cert_0010100 = true := by native_decide
-theorem cert_0010010100_matches : certificateMatches "0010010100" cert_0010010100 = true := by native_decide
-theorem cert_0010010100100_matches : certificateMatches "0010010100100" cert_0010010100100 = true := by native_decide
-theorem cert_00_matches : certificateMatches "00" cert_00 = true := by native_decide
+theorem cert_1_matches : certificateMatches "1" cert_1 = true := by
+  with_unfolding_all decide
+theorem cert_0010100101_matches : certificateMatches "0010100101" cert_0010100101 = true := by
+  set_option maxRecDepth 1000000 in
+    with_unfolding_all decide
+theorem cert_100_matches : certificateMatches "100" cert_100 = true := by
+  with_unfolding_all decide
+theorem cert_10100101_matches : certificateMatches "10100101" cert_10100101 = true := by
+  set_option maxRecDepth 1000000 in
+    with_unfolding_all decide
+theorem cert_10100_matches : certificateMatches "10100" cert_10100 = true := by
+  with_unfolding_all decide
+theorem cert_001001_matches : certificateMatches "001001" cert_001001 = true := by
+  with_unfolding_all decide
+theorem cert_100101_matches : certificateMatches "100101" cert_100101 = true := by
+  with_unfolding_all decide
+theorem cert_100100_matches : certificateMatches "100100" cert_100100 = true := by
+  with_unfolding_all decide
+theorem cert_00101_matches : certificateMatches "00101" cert_00101 = true := by
+  with_unfolding_all decide
+theorem cert_101_matches : certificateMatches "101" cert_101 = true := by
+  with_unfolding_all decide
+theorem cert_1010010101_matches : certificateMatches "1010010101" cert_1010010101 = true := by
+  with_unfolding_all decide
+theorem cert_00100_matches : certificateMatches "00100" cert_00100 = true := by
+  with_unfolding_all decide
+theorem cert_1010010100_matches : certificateMatches "1010010100" cert_1010010100 = true := by
+  set_option maxRecDepth 1000000 in
+    with_unfolding_all decide
+theorem cert_00100100_matches : certificateMatches "00100100" cert_00100100 = true := by
+  with_unfolding_all decide
+theorem cert_0010100_matches : certificateMatches "0010100" cert_0010100 = true := by
+  with_unfolding_all decide
+theorem cert_0010010100_matches : certificateMatches "0010010100" cert_0010010100 = true := by
+  with_unfolding_all decide
+theorem cert_0010010100100_matches : certificateMatches "0010010100100" cert_0010010100100 = true := by
+  set_option maxRecDepth 1000000 in
+    with_unfolding_all decide
+theorem cert_00_matches : certificateMatches "00" cert_00 = true := by
+  with_unfolding_all decide
 
 end Step2Sparse
 

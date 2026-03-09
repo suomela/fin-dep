@@ -12,7 +12,7 @@ open scoped BigOperators
 /-!
 Evaluation of `Poly3.Poly` into `ℝ`.
 
-This is used to interpret the computable polynomial certificates (proved by `native_decide`)
+This is used to interpret the computable polynomial certificates
 as genuine real identities about probabilities.
 -/
 

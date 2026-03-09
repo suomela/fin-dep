@@ -46,36 +46,36 @@ def good00 : Finset String :=
 def good01 : Finset String :=
   (allowedWordsFinset 7).filter (fun w => prefixOf w 1 = "0" ∧ w.toList.reverse.head? = some '1')
 
-lemma pref6_001001 : pref6 "001001" = {"0010010"} := by native_decide
-lemma suf6_001001 : suf6 "001001" = {"1001001"} := by native_decide
+lemma pref6_001001 : pref6 "001001" = {"0010010"} := by decide
+lemma suf6_001001 : suf6 "001001" = {"1001001"} := by decide
 
-lemma pref6_100100 : pref6 "100100" = {"1001001"} := by native_decide
-lemma suf6_100100 : suf6 "100100" = {"0100100"} := by native_decide
+lemma pref6_100100 : pref6 "100100" = {"1001001"} := by decide
+lemma suf6_100100 : suf6 "100100" = {"0100100"} := by decide
 
-lemma pref6_001010 : pref6 "001010" = {"0010100", "0010101"} := by native_decide
-lemma suf6_001010 : suf6 "001010" = {"1001010"} := by native_decide
+lemma pref6_001010 : pref6 "001010" = {"0010100", "0010101"} := by decide
+lemma suf6_001010 : suf6 "001010" = {"1001010"} := by decide
 
-lemma pref6_100101 : pref6 "100101" = {"1001010"} := by native_decide
-lemma suf6_100101 : suf6 "100101" = {"0100101"} := by native_decide
+lemma pref6_100101 : pref6 "100101" = {"1001010"} := by decide
+lemma suf6_100101 : suf6 "100101" = {"0100101"} := by decide
 
-lemma pref6_010010 : pref6 "010010" = {"0100100", "0100101"} := by native_decide
-lemma suf6_010010 : suf6 "010010" = {"0010010", "1010010"} := by native_decide
+lemma pref6_010010 : pref6 "010010" = {"0100100", "0100101"} := by decide
+lemma suf6_010010 : suf6 "010010" = {"0010010", "1010010"} := by decide
 
-lemma pref6_010100 : pref6 "010100" = {"0101001"} := by native_decide
-lemma suf6_010100 : suf6 "010100" = {"0010100", "1010100"} := by native_decide
+lemma pref6_010100 : pref6 "010100" = {"0101001"} := by decide
+lemma suf6_010100 : suf6 "010100" = {"0010100", "1010100"} := by decide
 
-lemma pref6_101001 : pref6 "101001" = {"1010010"} := by native_decide
-lemma suf6_101001 : suf6 "101001" = {"0101001"} := by native_decide
+lemma pref6_101001 : pref6 "101001" = {"1010010"} := by decide
+lemma suf6_101001 : suf6 "101001" = {"0101001"} := by decide
 
-lemma pref6_010101 : pref6 "010101" = {"0101010"} := by native_decide
-lemma suf6_010101 : suf6 "010101" = {"0010101", "1010101"} := by native_decide
+lemma pref6_010101 : pref6 "010101" = {"0101010"} := by decide
+lemma suf6_010101 : suf6 "010101" = {"0010101", "1010101"} := by decide
 
-lemma pref6_101010 : pref6 "101010" = {"1010100", "1010101"} := by native_decide
-lemma suf6_101010 : suf6 "101010" = {"0101010"} := by native_decide
+lemma pref6_101010 : pref6 "101010" = {"1010100", "1010101"} := by decide
+lemma suf6_101010 : suf6 "101010" = {"0101010"} := by decide
 
-lemma good11_eq : good11 = {"1001001", "1010101"} := by native_decide
-lemma good00_eq : good00 = {"0010010", "0010100", "0100100", "0101010"} := by native_decide
-lemma good01_eq : good01 = {"0010101", "0100101", "0101001"} := by native_decide
+lemma good11_eq : good11 = {"1001001", "1010101"} := by decide
+lemma good00_eq : good00 = {"0010010", "0010100", "0100100", "0101010"} := by decide
+lemma good01_eq : good01 = {"0010101", "0100101", "0101001"} := by decide
 
 /-! ### Basic 1-step stationarity on cylinders -/
 
@@ -98,8 +98,12 @@ theorem prob_cylStr0_0_eq_one_sub_prob1 {μ : Measure FiniteDependence.MIS.State
     FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0") =
       1 - FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1") := by
   classical
-  have h01 : ("0" : String) ∈ K5Data.allowedWords 1 := by native_decide
-  have h11 : ("1" : String) ∈ K5Data.allowedWords 1 := by native_decide
+  have h01_fin : ("0" : String) ∈ allowedWordsFinset 1 := by decide
+  have h11_fin : ("1" : String) ∈ allowedWordsFinset 1 := by decide
+  have h01 : ("0" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "0")).1 h01_fin
+  have h11 : ("1" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "1")).1 h11_fin
   have h0meas : MeasurableSet (cylStr (a := 0) ("0" : String)) := measurableSet_cylStr (a := 0) (s := "0")
   have hdisj : Disjoint (cylStr (a := 0) ("0" : String)) (cylStr (a := 0) ("1" : String)) := by
     -- Distinct length-1 cylinders are disjoint.
@@ -107,7 +111,7 @@ theorem prob_cylStr0_0_eq_one_sub_prob1 {μ : Measure FiniteDependence.MIS.State
     have h1 : Is01String ("1" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "1") h11
     have h0L : ("0" : String).length = 1 := length_of_mem_allowedWords (L := 1) (s := "0") h01
     have h1L : ("1" : String).length = 1 := length_of_mem_allowedWords (L := 1) (s := "1") h11
-    exact cylStr_disjoint_of_ne_len (a := 0) (L := 1) (s := "0") (t := "1") h0 h1 h0L h1L (by native_decide)
+    exact cylStr_disjoint_of_ne_len (a := 0) (L := 1) (s := "0") (t := "1") h0 h1 h0L h1L (by decide)
   have hcover : cylStr (a := 0) ("0" : String) ∪ cylStr (a := 0) ("1" : String) = (univ : Set FiniteDependence.MIS.State) := by
     -- Every State configuration has a well-defined bit at 0.
     ext ω
@@ -120,14 +124,14 @@ theorem prob_cylStr0_0_eq_one_sub_prob1 {μ : Measure FiniteDependence.MIS.State
           refine Or.inl ?_
           have hb : blockString 0 1 ω = "0" := by
             simp [K5Bridge.Model.blockString, h]
-            native_decide
+            decide
           have h01' : Is01String ("0" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "0") h01
           exact (mem_cylStr_iff_blockString_eq (a := 0) ("0" : String) ω h01').2 (by simpa using hb)
       | true =>
           refine Or.inr ?_
           have hb : blockString 0 1 ω = "1" := by
             simp [K5Bridge.Model.blockString, h]
-            native_decide
+            decide
           have h11' : Is01String ("1" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "1") h11
           exact (mem_cylStr_iff_blockString_eq (a := 0) ("1" : String) ω h11').2 (by simpa using hb)
 
@@ -160,7 +164,9 @@ private theorem cylStr_endpoints11_eq_union :
     (cylStr (a := (0 : ℤ)) "1" ∩ cylStr (a := (6 : ℤ)) "1") =
       ⋃ w ∈ good11, cylStr (a := (0 : ℤ)) w := by
   classical
-  have h1mem : ("1" : String) ∈ K5Data.allowedWords 1 := by native_decide
+  have h1mem_fin : ("1" : String) ∈ allowedWordsFinset 1 := by decide
+  have h1mem : ("1" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "1")).1 h1mem_fin
   have h1_01 : Is01String ("1" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "1") h1mem
   have h1_len : ("1" : String).length = 1 := length_of_mem_allowedWords (L := 1) (s := "1") h1mem
 
@@ -194,7 +200,7 @@ private theorem cylStr_endpoints11_eq_union :
         | false =>
             have : ("" : String).push '0' = "1" := by
               simpa [K5Bridge.Model.blockString, hω6] using h6'
-            have hne : (("" : String).push '0' : String) ≠ "1" := by native_decide
+            have hne : (("" : String).push '0' : String) ≠ "1" := by decide
             exact False.elim (hne this)
         | true =>
             simpa using hω6
@@ -245,7 +251,7 @@ private theorem cylStr_endpoints11_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("1001001".toList.drop 6) = "1" := by native_decide
+        have : String.ofList ("1001001".toList.drop 6) = "1" := by decide
         have hx' : blockString 6 1 ω = "1" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("1" : String) ω h1_01).2 (by simpa [h1_len] using hx')
       exact ⟨h0, h6⟩
@@ -263,7 +269,7 @@ private theorem cylStr_endpoints11_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("1010101".toList.drop 6) = "1" := by native_decide
+        have : String.ofList ("1010101".toList.drop 6) = "1" := by decide
         have hx' : blockString 6 1 ω = "1" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("1" : String) ω h1_01).2 (by simpa [h1_len] using hx')
       exact ⟨h0, h6⟩
@@ -272,7 +278,9 @@ private theorem cylStr_endpoints00_eq_union :
     (cylStr (a := (0 : ℤ)) "0" ∩ cylStr (a := (6 : ℤ)) "0") =
       ⋃ w ∈ good00, cylStr (a := (0 : ℤ)) w := by
   classical
-  have h0mem : ("0" : String) ∈ K5Data.allowedWords 1 := by native_decide
+  have h0mem_fin : ("0" : String) ∈ allowedWordsFinset 1 := by decide
+  have h0mem : ("0" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "0")).1 h0mem_fin
   have h0_01 : Is01String ("0" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "0") h0mem
   have h0_len : ("0" : String).length = 1 := length_of_mem_allowedWords (L := 1) (s := "0") h0mem
   ext ω
@@ -301,7 +309,7 @@ private theorem cylStr_endpoints00_eq_union :
         | true =>
             have : ("" : String).push '1' = "0" := by
               simpa [K5Bridge.Model.blockString, hω6] using h6'
-            have hne : (("" : String).push '1' : String) ≠ "0" := by native_decide
+            have hne : (("" : String).push '1' : String) ≠ "0" := by decide
             exact False.elim (hne this)
       have hs_push : s = (blockString 0 6 ω).push '0' := by
         simp [s, K5Bridge.Model.blockString, hbit]
@@ -327,14 +335,16 @@ private theorem cylStr_endpoints00_eq_union :
     rcases hw_cases with rfl | rfl | rfl | rfl
     · -- w = 0010010
       have hbs : blockString 0 7 ω = ("0010010" : String) := by
-        have hw7 : ("0010010" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0010010" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0010010" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0010010")).1 hw7_fin
         have w7 : Is01String ("0010010" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0010010") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0010010" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0010010" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0010010" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("0" : String) := by
@@ -344,20 +354,22 @@ private theorem cylStr_endpoints00_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0010010".toList.drop 6) = "0" := by native_decide
+        have : String.ofList ("0010010".toList.drop 6) = "0" := by decide
         have hx' : blockString 6 1 ω = "0" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx')
       exact ⟨h0, h6⟩
     · -- w = 0010100
       have hbs : blockString 0 7 ω = ("0010100" : String) := by
-        have hw7 : ("0010100" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0010100" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0010100" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0010100")).1 hw7_fin
         have w7 : Is01String ("0010100" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0010100") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0010100" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0010100" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0010100" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("0" : String) := by
@@ -367,20 +379,22 @@ private theorem cylStr_endpoints00_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0010100".toList.drop 6) = "0" := by native_decide
+        have : String.ofList ("0010100".toList.drop 6) = "0" := by decide
         have hx' : blockString 6 1 ω = "0" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx')
       exact ⟨h0, h6⟩
     · -- w = 0100100
       have hbs : blockString 0 7 ω = ("0100100" : String) := by
-        have hw7 : ("0100100" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0100100" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0100100" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0100100")).1 hw7_fin
         have w7 : Is01String ("0100100" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0100100") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0100100" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0100100" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0100100" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("0" : String) := by
@@ -390,20 +404,22 @@ private theorem cylStr_endpoints00_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0100100".toList.drop 6) = "0" := by native_decide
+        have : String.ofList ("0100100".toList.drop 6) = "0" := by decide
         have hx' : blockString 6 1 ω = "0" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx')
       exact ⟨h0, h6⟩
     · -- w = 0101010
       have hbs : blockString 0 7 ω = ("0101010" : String) := by
-        have hw7 : ("0101010" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0101010" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0101010" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0101010")).1 hw7_fin
         have w7 : Is01String ("0101010" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0101010") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0101010" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0101010" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0101010" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("0" : String) := by
@@ -413,7 +429,7 @@ private theorem cylStr_endpoints00_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0101010".toList.drop 6) = "0" := by native_decide
+        have : String.ofList ("0101010".toList.drop 6) = "0" := by decide
         have hx' : blockString 6 1 ω = "0" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx')
       exact ⟨h0, h6⟩
@@ -422,8 +438,12 @@ private theorem cylStr_endpoints01_eq_union :
     (cylStr (a := (0 : ℤ)) "0" ∩ cylStr (a := (6 : ℤ)) "1") =
       ⋃ w ∈ good01, cylStr (a := (0 : ℤ)) w := by
   classical
-  have h0mem : ("0" : String) ∈ K5Data.allowedWords 1 := by native_decide
-  have h1mem : ("1" : String) ∈ K5Data.allowedWords 1 := by native_decide
+  have h0mem_fin : ("0" : String) ∈ allowedWordsFinset 1 := by decide
+  have h1mem_fin : ("1" : String) ∈ allowedWordsFinset 1 := by decide
+  have h0mem : ("0" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "0")).1 h0mem_fin
+  have h1mem : ("1" : String) ∈ K5Data.allowedWords 1 :=
+    (mem_allowedWordsFinset_iff (L := 1) (s := "1")).1 h1mem_fin
   have h0_01 : Is01String ("0" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "0") h0mem
   have h1_01 : Is01String ("1" : String) := Is01String.of_mem_allowedWords (L := 1) (s := "1") h1mem
   have h0_len : ("0" : String).length = 1 := length_of_mem_allowedWords (L := 1) (s := "0") h0mem
@@ -453,7 +473,7 @@ private theorem cylStr_endpoints01_eq_union :
         | false =>
             have : ("" : String).push '0' = "1" := by
               simpa [K5Bridge.Model.blockString, hω6] using h6'
-            have hne : (("" : String).push '0' : String) ≠ "1" := by native_decide
+            have hne : (("" : String).push '0' : String) ≠ "1" := by decide
             exact False.elim (hne this)
         | true => simpa using hω6
       have hs_push : s = (blockString 0 6 ω).push '1' := by
@@ -480,14 +500,16 @@ private theorem cylStr_endpoints01_eq_union :
     rcases hw_cases with rfl | rfl | rfl
     · -- w = 0010101
       have hbs : blockString 0 7 ω = ("0010101" : String) := by
-        have hw7 : ("0010101" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0010101" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0010101" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0010101")).1 hw7_fin
         have w7 : Is01String ("0010101" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0010101") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0010101" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0010101" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0010101" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("1" : String) := by
@@ -497,20 +519,22 @@ private theorem cylStr_endpoints01_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0010101".toList.drop 6) = "1" := by native_decide
+        have : String.ofList ("0010101".toList.drop 6) = "1" := by decide
         have hx' : blockString 6 1 ω = "1" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("1" : String) ω h1_01).2 (by simpa [h1_len] using hx')
       exact ⟨h0, h6⟩
     · -- w = 0100101
       have hbs : blockString 0 7 ω = ("0100101" : String) := by
-        have hw7 : ("0100101" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0100101" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0100101" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0100101")).1 hw7_fin
         have w7 : Is01String ("0100101" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0100101") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0100101" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0100101" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0100101" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("1" : String) := by
@@ -520,20 +544,22 @@ private theorem cylStr_endpoints01_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0100101".toList.drop 6) = "1" := by native_decide
+        have : String.ofList ("0100101".toList.drop 6) = "1" := by decide
         have hx' : blockString 6 1 ω = "1" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("1" : String) ω h1_01).2 (by simpa [h1_len] using hx')
       exact ⟨h0, h6⟩
     · -- w = 0101001
       have hbs : blockString 0 7 ω = ("0101001" : String) := by
-        have hw7 : ("0101001" : String) ∈ K5Data.allowedWords 7 := by native_decide
+        have hw7_fin : ("0101001" : String) ∈ allowedWordsFinset 7 := by decide
+        have hw7 : ("0101001" : String) ∈ K5Data.allowedWords 7 :=
+          (mem_allowedWordsFinset_iff (L := 7) (s := "0101001")).1 hw7_fin
         have w7 : Is01String ("0101001" : String) := Is01String.of_mem_allowedWords (L := 7) (s := "0101001") hw7
         have := (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0101001" : String) ω w7).1 hωw
         simpa using this
       have h0 : ω ∈ cylStr (a := (0 : ℤ)) ("0" : String) := by
         have : prefixOf (blockString 0 7 ω) 1 = blockString 0 1 ω :=
           prefixOf_blockString (ω := ω) (a := (0 : ℤ)) (L := 7) (m := 1) (by decide)
-        have hprefix : prefixOf ("0101001" : String) 1 = "0" := by native_decide
+        have hprefix : prefixOf ("0101001" : String) 1 = "0" := by decide
         have hx : blockString 0 1 ω = "0" := by simpa [hbs, hprefix] using this.symm
         exact (mem_cylStr_iff_blockString_eq (a := (0 : ℤ)) ("0" : String) ω h0_01).2 (by simpa [h0_len] using hx)
       have h6 : ω ∈ cylStr (a := (6 : ℤ)) ("1" : String) := by
@@ -543,7 +569,7 @@ private theorem cylStr_endpoints01_eq_union :
           have : String.ofList ((blockString 0 7 ω).toList.drop 6) = blockString 6 1 ω := by
             simpa [Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using hdrop
           simpa [hbs] using this.symm
-        have : String.ofList ("0101001".toList.drop 6) = "1" := by native_decide
+        have : String.ofList ("0101001".toList.drop 6) = "1" := by decide
         have hx' : blockString 6 1 ω = "1" := by simpa [this] using hx
         exact (mem_cylStr_iff_blockString_eq (a := (6 : ℤ)) ("1" : String) ω h1_01).2 (by simpa [h1_len] using hx')
       exact ⟨h0, h6⟩
@@ -605,14 +631,18 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
   -- Extract the particular length-6 stationarity relations we need.
   have h001001 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010010") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1001001") := by
-    have hu : ("001001" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("001001" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("001001" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "001001")).1 hu_fin
     have h := st6 "001001" hu
     rw [pref6_001001, suf6_001001] at h
     simpa using h
 
   have h100100 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1001001") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0100100") := by
-    have hu : ("100100" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("100100" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("100100" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "100100")).1 hu_fin
     have h := st6 "100100" hu
     rw [pref6_100100, suf6_100100] at h
     simpa using h
@@ -620,14 +650,18 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
   have h001010 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010100") +
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010101") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1001010") := by
-    have hu : ("001010" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("001010" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("001010" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "001010")).1 hu_fin
     have h := st6 "001010" hu
     rw [pref6_001010, suf6_001010] at h
     simpa [add_comm, add_left_comm, add_assoc] using h
 
   have h100101 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1001010") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0100101") := by
-    have hu : ("100101" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("100101" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("100101" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "100101")).1 hu_fin
     have h := st6 "100101" hu
     rw [pref6_100101, suf6_100101] at h
     simpa using h
@@ -636,7 +670,9 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0100101") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010010") +
           FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010010") := by
-    have hu : ("010010" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("010010" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("010010" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "010010")).1 hu_fin
     have h := st6 "010010" hu
     rw [pref6_010010, suf6_010010] at h
     simpa [add_comm, add_left_comm, add_assoc] using h
@@ -644,14 +680,18 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
   have h010100 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0101001") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010100") +
         FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010100") := by
-    have hu : ("010100" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("010100" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("010100" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "010100")).1 hu_fin
     have h := st6 "010100" hu
     rw [pref6_010100, suf6_010100] at h
     simpa [add_comm, add_left_comm, add_assoc] using h
 
   have h101001 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010010") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0101001") := by
-    have hu : ("101001" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("101001" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("101001" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "101001")).1 hu_fin
     have h := st6 "101001" hu
     rw [pref6_101001, suf6_101001] at h
     simpa using h
@@ -659,7 +699,9 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
   have h010101 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0101010") =
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0010101") +
         FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010101") := by
-    have hu : ("010101" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("010101" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("010101" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "010101")).1 hu_fin
     have h := st6 "010101" hu
     rw [pref6_010101, suf6_010101] at h
     simpa [add_comm, add_left_comm, add_assoc] using h
@@ -667,7 +709,9 @@ theorem prob_dist7_formulas (μ : Measure FiniteDependence.MIS.State) [IsProbabi
   have h101010 : FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010100") +
       FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "1010101") =
         FiniteDependence.MIS.Model.prob μ (cylStr (a := 0) "0101010") := by
-    have hu : ("101010" : String) ∈ K5Data.allowedWords 6 := by native_decide
+    have hu_fin : ("101010" : String) ∈ allowedWordsFinset 6 := by decide
+    have hu : ("101010" : String) ∈ K5Data.allowedWords 6 :=
+      (mem_allowedWordsFinset_iff (L := 6) (s := "101010")).1 hu_fin
     have h := st6 "101010" hu
     rw [pref6_101010, suf6_101010] at h
     simpa [add_comm, add_left_comm, add_assoc] using h

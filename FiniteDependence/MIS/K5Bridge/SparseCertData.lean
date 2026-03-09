@@ -8,6 +8,9 @@ namespace Model
 
 open K5Data
 
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 20000000
+
 /-!
 Sparse dual-certificate data for the streamlined `k = 5` Step-3 argument.
 
@@ -47,10 +50,11 @@ def allRows : List RowKind :=
   RowKind.norm :: (words13.map RowKind.stat13) ++ splitRows
 
 theorem allRows_length : allRows.length = 280 := by
-  native_decide
+  set_option maxRecDepth 1000000 in
+    decide
 
 theorem words14_length : words14.length = 86 := by
-  native_decide
+  decide
 
 def rowCoeff (r : RowKind) (w : String) : ℚ :=
   match r with
@@ -294,34 +298,40 @@ def certificates : List (String × List (Nat × ℚ)) :=
     ("001001", cert_001001)]
 
 theorem certificate_count : certificates.length = 13 := by
-  native_decide
+  decide
 
 def supportSizes : List Nat :=
   certificates.map (fun p => p.2.length)
 
 theorem support_sizes_sorted :
     supportSizes.insertionSort (fun a b => a ≤ b) = [3, 3, 3, 4, 5, 10, 10, 10, 11, 16, 16, 17, 25] := by
-  native_decide
+  decide
 
 theorem support_sizes_total : supportSizes.foldl (· + ·) 0 = 133 := by
-  native_decide
+  decide
 
 theorem support_sizes_max : supportSizes.foldl max 0 = 25 := by
-  native_decide
+  set_option maxRecDepth 1000000 in
+    decide
 
 theorem row_index_profile :
     let idxs := List.flatMap (fun p => p.2.map (fun rc => rc.1)) certificates
     let uniq := (List.eraseDups idxs).insertionSort (· ≤ ·)
     (idxs.length = 133) ∧ (uniq.length = 65) := by
-  native_decide
+  set_option maxRecDepth 1000000 in
+    decide
 
 theorem certificates_match_targets :
     certificates.all (fun p => certificateMatches p.1 p.2) = true := by
-  native_decide
+  set_option maxHeartbeats 20000000 in
+    set_option maxRecDepth 1000000 in
+      with_unfolding_all decide
 
 theorem cert_1010100101_matches :
     certificateMatches "1010100101" cert_1010100101 = true := by
-  native_decide
+  set_option maxHeartbeats 20000000 in
+    set_option maxRecDepth 1000000 in
+      with_unfolding_all decide
 
 end
 

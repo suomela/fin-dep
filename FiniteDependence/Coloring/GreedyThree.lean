@@ -60,6 +60,22 @@ private lemma measurable_greedyThreeFromWeak : Measurable greedyThreeFromWeak :=
     (h2 := by simpa using (measurable_pi_apply (a := i + 2)))
     (h3 := by simpa using (measurable_pi_apply (a := i + 3)))
 
+private def fourBlockOffsets : Fin 4 → ℤ
+  | 0 => 0
+  | 1 => 1
+  | 2 => 2
+  | 3 => 3
+
+private lemma measurable_greedyThreeFromWeak_local {m : MeasurableSpace (ℤ → Fin 2)} (i : ℤ)
+    (hcoords : ∀ t : Fin 4, Measurable[m] fun x : ℤ → Fin 2 => x (i + fourBlockOffsets t)) :
+    Measurable[m] fun x : ℤ → Fin 2 => greedyThreeFromWeak x i := by
+  refine measurable_greedyThreeFromWeak_at (m := m) (i := i)
+    (h0 := ?_) (h1 := ?_) (h2 := ?_) (h3 := ?_)
+  · simpa [fourBlockOffsets] using hcoords 0
+  · simpa [fourBlockOffsets] using hcoords 1
+  · simpa [fourBlockOffsets] using hcoords 2
+  · simpa [fourBlockOffsets] using hcoords 3
+
 private lemma greedyThreeFromWeak_shift (x : ℤ → Fin 2) :
     greedyThreeFromWeak (FiniteDependence.Coloring.shift (q := 2) x)
       = FiniteDependence.Coloring.shift (q := 3) (greedyThreeFromWeak x) := by
@@ -147,64 +163,26 @@ private lemma greedyThreeFromWeak_isGreedy_of_isWeak (x : ℤ → Fin 2) (hx : I
 private lemma comap_past_le_greedy3 (i : ℤ) :
     (FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i).comap greedyThreeFromWeak
       ≤ FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3) := by
-  classical
-  unfold FiniteDependence.Coloring.pastMeasurableSpace FiniteDependence.pastMeasurableSpace
-  simp [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp]
-  intro a ha
-  have h0 : a < i + 3 := by linarith [ha]
-  have h1 : a + 1 < i + 3 := by linarith [ha]
-  have h2 : a + 2 < i + 3 := by linarith [ha]
-  have h3 : a + 3 < i + 3 := by linarith [ha]
-  have hm0 : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)]
-      fun x : ℤ → Fin 2 => x a :=
-    measurable_apply_past (q := 2) (i := i + 3) (j := a) h0
-  have hm1 : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)]
-      fun x : ℤ → Fin 2 => x (a + 1) :=
-    measurable_apply_past (q := 2) (i := i + 3) (j := a + 1) h1
-  have hm2 : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)]
-      fun x : ℤ → Fin 2 => x (a + 2) :=
-    measurable_apply_past (q := 2) (i := i + 3) (j := a + 2) h2
-  have hm3 : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)]
-      fun x : ℤ → Fin 2 => x (a + 3) :=
-    measurable_apply_past (q := 2) (i := i + 3) (j := a + 3) h3
-  have hmeas :
-      Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)]
-        fun x : ℤ → Fin 2 => greedyThreeFromWeak x a :=
-    measurable_greedyThreeFromWeak_at
-      (m := FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3)) (i := a)
-      (h0 := hm0) (h1 := hm1) (h2 := hm2) (h3 := hm3)
-  simpa [Function.comp] using hmeas.comap_le
+  simpa [fourBlockOffsets] using
+    (FiniteDependence.Coloring.comap_past_le_of_local
+      (q := 2) (q' := 3) (f := greedyThreeFromWeak) (o := fourBlockOffsets) (r := 3)
+      (hlocal := measurable_greedyThreeFromWeak_local)
+      (hupper := by
+        intro t
+        fin_cases t <;> decide)
+      i)
 
 private lemma comap_future_le_greedy3 (i : ℤ) :
     (FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 6).comap greedyThreeFromWeak
       ≤ FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3 := by
-  classical
-  unfold FiniteDependence.Coloring.futureMeasurableSpace FiniteDependence.futureMeasurableSpace
-  simp [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp]
-  intro a ha
-  have h0 : i + 3 + 3 ≤ a := by linarith [ha]
-  have h1 : i + 3 + 3 ≤ a + 1 := by linarith [ha]
-  have h2 : i + 3 + 3 ≤ a + 2 := by linarith [ha]
-  have h3 : i + 3 + 3 ≤ a + 3 := by linarith [ha]
-  have hm0 : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3]
-      fun x : ℤ → Fin 2 => x a :=
-    measurable_apply_future (q := 2) (i := i + 3) (k := 3) (j := a) h0
-  have hm1 : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3]
-      fun x : ℤ → Fin 2 => x (a + 1) :=
-    measurable_apply_future (q := 2) (i := i + 3) (k := 3) (j := a + 1) h1
-  have hm2 : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3]
-      fun x : ℤ → Fin 2 => x (a + 2) :=
-    measurable_apply_future (q := 2) (i := i + 3) (k := 3) (j := a + 2) h2
-  have hm3 : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3]
-      fun x : ℤ → Fin 2 => x (a + 3) :=
-    measurable_apply_future (q := 2) (i := i + 3) (k := 3) (j := a + 3) h3
-  have hmeas :
-      Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3]
-        fun x : ℤ → Fin 2 => greedyThreeFromWeak x a :=
-    measurable_greedyThreeFromWeak_at
-      (m := FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3) (i := a)
-      (h0 := hm0) (h1 := hm1) (h2 := hm2) (h3 := hm3)
-  simpa [Function.comp] using hmeas.comap_le
+  simpa [fourBlockOffsets] using
+    (FiniteDependence.Coloring.comap_future_le_of_local
+      (q := 2) (q' := 3) (f := greedyThreeFromWeak) (o := fourBlockOffsets) (r := 3) (k := 3)
+      (k' := 6) (hlocal := measurable_greedyThreeFromWeak_local)
+      (hlower := by
+        intro t
+        fin_cases t <;> decide)
+      i)
 
 /-! ## Existence at dependence range 6 -/
 
@@ -223,61 +201,17 @@ theorem exists_stationary_sixDependent_greedyThreeColoring :
           = greedyThreeFromWeak ∘ (FiniteDependence.Coloring.shift (q := 2)) := by
       funext x
       simpa [Function.comp] using (greedyThreeFromWeak_shift x).symm
-    have hmeas_shift2 : Measurable (FiniteDependence.Coloring.shift (q := 2)) := measurable_shift 2
-    have hmeas_shift3 : Measurable (FiniteDependence.Coloring.shift (q := 3)) := measurable_shift 3
-    change ((μ3 : Measure (ℤ → Fin 3)).map (FiniteDependence.Coloring.shift (q := 3)))
-      = (μ3 : Measure (ℤ → Fin 3))
-    have hstat2' :
-        ((μ2 : Measure (ℤ → Fin 2)).map (FiniteDependence.Coloring.shift (q := 2)))
-          = (μ2 : Measure (ℤ → Fin 2)) := hstat2
-    calc
-      ((μ3 : Measure (ℤ → Fin 3)).map (FiniteDependence.Coloring.shift (q := 3)))
-          = (((μ2 : Measure (ℤ → Fin 2)).map greedyThreeFromWeak).map
-              (FiniteDependence.Coloring.shift (q := 3))) := by
-                rfl
-      _ = (μ2 : Measure (ℤ → Fin 2)).map ((FiniteDependence.Coloring.shift (q := 3)) ∘ greedyThreeFromWeak) := by
-            simpa using (Measure.map_map (μ := (μ2 : Measure (ℤ → Fin 2))) hmeas_shift3
-              measurable_greedyThreeFromWeak)
-      _ = (μ2 : Measure (ℤ → Fin 2)).map (greedyThreeFromWeak ∘ (FiniteDependence.Coloring.shift (q := 2))) := by
-            simp [hcomm]
-      _ = (((μ2 : Measure (ℤ → Fin 2)).map (FiniteDependence.Coloring.shift (q := 2))).map greedyThreeFromWeak) := by
-            symm
-            simpa using (Measure.map_map (μ := (μ2 : Measure (ℤ → Fin 2))) measurable_greedyThreeFromWeak
-              hmeas_shift2)
-      _ = (μ2 : Measure (ℤ → Fin 2)).map greedyThreeFromWeak := by
-            simp [hstat2']
-      _ = (μ3 : Measure (ℤ → Fin 3)) := rfl
+    simpa [μ3] using
+      (FiniteDependence.Coloring.isStationary_map_of_comm
+        (hf := measurable_greedyThreeFromWeak)
+        (hcomm := hcomm) (hstat := hstat2))
   · have hdep3' : FiniteDependence.Coloring.IsKDependent (q := 2) μ2 3 := by
       simpa [IsKDependentCut, FiniteDependence.Coloring.IsKDependent] using hdep3
-    have hkdepMap : FiniteDependence.Coloring.IsKDependent (q := 3) μ3 6 := by
-      intro i
-      have hbase :
-          Indep (FiniteDependence.Coloring.pastMeasurableSpace (q := 2) (i + 3))
-            (FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3)
-            (μ := (μ2 : Measure (ℤ → Fin 2))) := hdep3' (i + 3)
-      have hcomap :
-          Indep ((FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i).comap greedyThreeFromWeak)
-            ((FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 6).comap greedyThreeFromWeak)
-              (μ := (μ2 : Measure (ℤ → Fin 2))) := by
-        have h1 :
-            Indep ((FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i).comap greedyThreeFromWeak)
-              (FiniteDependence.Coloring.futureMeasurableSpace (q := 2) (i + 3) 3)
-                (μ := (μ2 : Measure (ℤ → Fin 2))) :=
-          indep_of_indep_of_le_left hbase (comap_past_le_greedy3 (i := i))
-        exact indep_of_indep_of_le_right h1 (comap_future_le_greedy3 (i := i))
-      have hmap :
-          Indep (FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i)
-            (FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 6)
-            (μ :=
-              @Measure.map (ℤ → Fin 2) (ℤ → Fin 3) MeasurableSpace.pi MeasurableSpace.pi greedyThreeFromWeak
-                (μ2 : Measure (ℤ → Fin 2))) := by
-        refine
-          indep_map_of_indep_comap (mΩ' := (MeasurableSpace.pi : MeasurableSpace (ℤ → Fin 3)))
-            (μ := (μ2 : Measure (ℤ → Fin 2))) (f := greedyThreeFromWeak)
-            (hf := measurable_greedyThreeFromWeak.aemeasurable) (hm₁ := ?_) (hm₂ := ?_) hcomap
-        · simpa using pastMeasurableSpace_le (q := 3) i
-        · simpa using futureMeasurableSpace_le (q := 3) i 6
-      simpa [μ3, ProbabilityMeasure.map] using hmap
+    have hkdepMap : FiniteDependence.Coloring.IsKDependent (q := 3) μ3 6 :=
+      FiniteDependence.Coloring.isKDependent_map_of_past_future
+        (hf := measurable_greedyThreeFromWeak.aemeasurable) (hdep := hdep3')
+        (cut := fun i => i + 3) (hpast := comap_past_le_greedy3)
+        (hfuture := comap_future_le_greedy3)
     simpa [IsKDependentCut, FiniteDependence.Coloring.IsKDependent] using hkdepMap
   · have hsub :
       {x : ℤ → Fin 2 | IsWeakTwoColoring x}
@@ -322,15 +256,19 @@ private def misFromGreedyThree (c : ℤ → Fin 3) : ℤ → Fin 2 :=
 private lemma fin3_eq_two_of_ne_zero_of_ne_one (a : Fin 3) (h0 : a ≠ 0) (h1 : a ≠ 1) : a = 2 := by
   fin_cases a <;> simp at h0 h1 ⊢
 
-private lemma measurable_misFromGreedyThree : Measurable misFromGreedyThree := by
-  classical
-  refine measurable_pi_lambda _ (fun i => ?_)
-  have h0 : Measurable fun c : ℤ → Fin 3 => c i := by
-    simpa using (measurable_pi_apply (a := i))
+private lemma measurable_misFromGreedyThree_at {m : MeasurableSpace (ℤ → Fin 3)} (i : ℤ)
+    (h0 : Measurable[m] fun c : ℤ → Fin 3 => c i) :
+    Measurable[m] fun c : ℤ → Fin 3 => misFromGreedyThree c i := by
   have hset : MeasurableSet {c : ℤ → Fin 3 | c i = (0 : Fin 3)} := by
     simpa [Set.preimage, Set.mem_singleton_iff] using
       (measurableSet_singleton (0 : Fin 3)).preimage h0
   exact Measurable.ite hset measurable_const measurable_const
+
+private lemma measurable_misFromGreedyThree : Measurable misFromGreedyThree := by
+  classical
+  refine measurable_pi_lambda _ (fun i => ?_)
+  exact measurable_misFromGreedyThree_at (m := inferInstance) (i := i)
+    (h0 := by simpa using (measurable_pi_apply (a := i)))
 
 private lemma misFromGreedyThree_shift (c : ℤ → Fin 3) :
     misFromGreedyThree (FiniteDependence.Coloring.shift (q := 3) c)
@@ -387,40 +325,35 @@ private lemma misFromGreedyThree_isMIS_of_isGreedy (c : ℤ → Fin 3) (hc : IsG
 private lemma comap_past_le_misGreedy (i : ℤ) :
     (FiniteDependence.Coloring.pastMeasurableSpace (q := 2) i).comap misFromGreedyThree
       ≤ FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i := by
-  classical
-  unfold FiniteDependence.Coloring.pastMeasurableSpace FiniteDependence.pastMeasurableSpace
-  simp [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp]
-  intro a ha
-  have hm : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i]
-      fun c : ℤ → Fin 3 => c a :=
-    measurable_apply_past (q := 3) (i := i) (j := a) ha
-  have hset : MeasurableSet[FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i]
-      {c : ℤ → Fin 3 | c a = (0 : Fin 3)} := by
-    simpa [Set.preimage, Set.mem_singleton_iff] using
-      (measurableSet_singleton (0 : Fin 3)).preimage hm
-  have hmeas : Measurable[FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i]
-      fun c : ℤ → Fin 3 => misFromGreedyThree c a := by
-    exact Measurable.ite hset measurable_const measurable_const
-  simpa [Function.comp, misFromGreedyThree] using hmeas.comap_le
+  simpa using
+    (FiniteDependence.Coloring.comap_past_le_of_local
+      (q := 3) (q' := 2) (f := misFromGreedyThree) (o := fun _ : Unit => (0 : ℤ)) (r := 0)
+      (hlocal := by
+        intro m a hcoords
+        simpa using
+          (measurable_misFromGreedyThree_at (m := m) (i := a) (h0 := by simpa using hcoords ())))
+      (hupper := by
+        intro t
+        cases t
+        decide)
+      i)
 
 private lemma comap_future_le_misGreedy (i : ℤ) :
     (FiniteDependence.Coloring.futureMeasurableSpace (q := 2) i 5).comap misFromGreedyThree
       ≤ FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5 := by
-  classical
-  unfold FiniteDependence.Coloring.futureMeasurableSpace FiniteDependence.futureMeasurableSpace
-  simp [MeasurableSpace.comap_iSup, MeasurableSpace.comap_comp]
-  intro a ha
-  have hm : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5]
-      fun c : ℤ → Fin 3 => c a :=
-    measurable_apply_future (q := 3) (i := i) (k := 5) (j := a) ha
-  have hset : MeasurableSet[FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5]
-      {c : ℤ → Fin 3 | c a = (0 : Fin 3)} := by
-    simpa [Set.preimage, Set.mem_singleton_iff] using
-      (measurableSet_singleton (0 : Fin 3)).preimage hm
-  have hmeas : Measurable[FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5]
-      fun c : ℤ → Fin 3 => misFromGreedyThree c a := by
-    exact Measurable.ite hset measurable_const measurable_const
-  simpa [Function.comp, misFromGreedyThree] using hmeas.comap_le
+  simpa using
+    (FiniteDependence.Coloring.comap_future_le_of_local
+      (q := 3) (q' := 2) (f := misFromGreedyThree) (o := fun _ : Unit => (0 : ℤ)) (r := 0)
+      (k := 5) (k' := 5)
+      (hlocal := by
+        intro m a hcoords
+        simpa using
+          (measurable_misFromGreedyThree_at (m := m) (i := a) (h0 := by simpa using hcoords ())))
+      (hlower := by
+        intro t
+        cases t
+        decide)
+      i)
 
 /-! ## Non-existence at dependence range 5 -/
 
@@ -440,64 +373,20 @@ theorem not_exists_stationary_fiveDependent_greedyThreeColoring :
           = misFromGreedyThree ∘ (FiniteDependence.Coloring.shift (q := 3)) := by
       funext c
       simpa [Function.comp] using (misFromGreedyThree_shift c).symm
-    have hmeas_shift2 : Measurable (FiniteDependence.Coloring.shift (q := 2)) := measurable_shift 2
-    have hmeas_shift3 : Measurable (FiniteDependence.Coloring.shift (q := 3)) := measurable_shift 3
-    change (((μMIS : ProbabilityMeasure (ℤ → Fin 2)) : Measure (ℤ → Fin 2)).map
-      (FiniteDependence.Coloring.shift (q := 2)))
-      = ((μMIS : ProbabilityMeasure (ℤ → Fin 2)) : Measure (ℤ → Fin 2))
-    have hstat3' :
-        ((μ3 : Measure (ℤ → Fin 3)).map (FiniteDependence.Coloring.shift (q := 3)))
-          = (μ3 : Measure (ℤ → Fin 3)) := hstat3
-    calc
-      (((μMIS : ProbabilityMeasure (ℤ → Fin 2)) : Measure (ℤ → Fin 2)).map
-          (FiniteDependence.Coloring.shift (q := 2)))
-          = (((μ3 : Measure (ℤ → Fin 3)).map misFromGreedyThree).map
-              (FiniteDependence.Coloring.shift (q := 2))) := by
-                rfl
-      _ = (μ3 : Measure (ℤ → Fin 3)).map ((FiniteDependence.Coloring.shift (q := 2)) ∘ misFromGreedyThree) := by
-            simpa using (Measure.map_map (μ := (μ3 : Measure (ℤ → Fin 3))) hmeas_shift2 measurable_misFromGreedyThree)
-      _ = (μ3 : Measure (ℤ → Fin 3)).map (misFromGreedyThree ∘ (FiniteDependence.Coloring.shift (q := 3))) := by
-            simp [hcomm]
-      _ = (((μ3 : Measure (ℤ → Fin 3)).map (FiniteDependence.Coloring.shift (q := 3))).map misFromGreedyThree) := by
-            symm
-            simpa using (Measure.map_map (μ := (μ3 : Measure (ℤ → Fin 3))) measurable_misFromGreedyThree hmeas_shift3)
-      _ = (μ3 : Measure (ℤ → Fin 3)).map misFromGreedyThree := by
-            simp [hstat3']
-      _ = ((μMIS : ProbabilityMeasure (ℤ → Fin 2)) : Measure (ℤ → Fin 2)) := rfl
+    simpa [μMIS] using
+      (FiniteDependence.Coloring.isStationary_map_of_comm
+        (hf := measurable_misFromGreedyThree)
+        (hcomm := hcomm) (hstat := hstat3))
 
   have hdep5' : FiniteDependence.Coloring.IsKDependent (q := 3) μ3 5 := by
     simpa [IsKDependentCut, FiniteDependence.Coloring.IsKDependent] using hdep5
 
   have hdepMIS : IsKDependentCut μMIS 5 := by
-    have hkdepMap : FiniteDependence.Coloring.IsKDependent (q := 2) μMIS 5 := by
-      intro i
-      have hbase :
-          Indep (FiniteDependence.Coloring.pastMeasurableSpace (q := 3) i)
-            (FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5)
-            (μ := (μ3 : Measure (ℤ → Fin 3))) := hdep5' i
-      have hcomap :
-          Indep ((FiniteDependence.Coloring.pastMeasurableSpace (q := 2) i).comap misFromGreedyThree)
-            ((FiniteDependence.Coloring.futureMeasurableSpace (q := 2) i 5).comap misFromGreedyThree)
-              (μ := (μ3 : Measure (ℤ → Fin 3))) := by
-        have h1 :
-            Indep ((FiniteDependence.Coloring.pastMeasurableSpace (q := 2) i).comap misFromGreedyThree)
-              (FiniteDependence.Coloring.futureMeasurableSpace (q := 3) i 5)
-                (μ := (μ3 : Measure (ℤ → Fin 3))) :=
-          indep_of_indep_of_le_left hbase (comap_past_le_misGreedy (i := i))
-        exact indep_of_indep_of_le_right h1 (comap_future_le_misGreedy (i := i))
-      have hmap :
-          Indep (FiniteDependence.Coloring.pastMeasurableSpace (q := 2) i)
-            (FiniteDependence.Coloring.futureMeasurableSpace (q := 2) i 5)
-            (μ :=
-              @Measure.map (ℤ → Fin 3) (ℤ → Fin 2) MeasurableSpace.pi MeasurableSpace.pi misFromGreedyThree
-                (μ3 : Measure (ℤ → Fin 3))) := by
-        refine
-          indep_map_of_indep_comap (mΩ' := (MeasurableSpace.pi : MeasurableSpace (ℤ → Fin 2)))
-            (μ := (μ3 : Measure (ℤ → Fin 3))) (f := misFromGreedyThree)
-            (hf := measurable_misFromGreedyThree.aemeasurable) (hm₁ := ?_) (hm₂ := ?_) hcomap
-        · simpa using pastMeasurableSpace_le (q := 2) i
-        · simpa using futureMeasurableSpace_le (q := 2) i 5
-      simpa [μMIS, ProbabilityMeasure.map] using hmap
+    have hkdepMap : FiniteDependence.Coloring.IsKDependent (q := 2) μMIS 5 :=
+      FiniteDependence.Coloring.isKDependent_map_of_past_future
+        (hf := measurable_misFromGreedyThree.aemeasurable) (hdep := hdep5')
+        (cut := fun i => i) (hpast := comap_past_le_misGreedy)
+        (hfuture := comap_future_le_misGreedy)
     simpa [IsKDependentCut, FiniteDependence.Coloring.IsKDependent] using hkdepMap
 
   have hMISsupport :

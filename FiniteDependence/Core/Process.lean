@@ -1,4 +1,5 @@
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
+import Mathlib.MeasureTheory.Constructions.Cylinders
 import Mathlib.Probability.Independence.Basic
 
 /-!
@@ -38,6 +39,29 @@ def coordMeasurableSpace (coord : Ω → ℤ → α) (S : Set ℤ) : MeasurableS
   ⨆ j : {j : ℤ // j ∈ S}, MeasurableSpace.comap (fun ω : Ω => coord ω j.1) inferInstance
 
 end Coord
+
+section CoordCylinders
+
+variable {α : Type*} [MeasurableSpace α]
+
+/-- For ordinary configuration spaces `ℤ → α`, the coordinate σ-algebra on a set of indices is
+exactly Mathlib's cylinder-event σ-algebra on that set. -/
+lemma coordMeasurableSpace_id_eq_cylinderEvents (S : Set ℤ) :
+    coordMeasurableSpace (coord := fun x : ℤ → α => x) S =
+      MeasureTheory.cylinderEvents (X := fun _ : ℤ => α) S := by
+  unfold coordMeasurableSpace MeasureTheory.cylinderEvents
+  simpa using
+    (iSup_subtype (p := fun i : ℤ => i ∈ S)
+      (f := fun i : {i : ℤ // i ∈ S} =>
+        MeasurableSpace.comap (fun x : ℤ → α => x i.1) inferInstance))
+
+/-- Restriction to a set of coordinates is measurable for the corresponding coordinate σ-algebra. -/
+lemma measurable_restrict_coordMeasurableSpace (S : Set ℤ) :
+    Measurable[coordMeasurableSpace (coord := fun x : ℤ → α => x) S] (Set.restrict S) := by
+  simpa [coordMeasurableSpace_id_eq_cylinderEvents (α := α) S] using
+    (MeasureTheory.measurable_restrict_cylinderEvents (X := fun _ : ℤ => α) S)
+
+end CoordCylinders
 
 /-! ## Finite dependence on `ℤ` -/
 

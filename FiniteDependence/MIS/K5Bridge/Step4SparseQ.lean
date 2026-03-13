@@ -177,10 +177,11 @@ private def poly_0010010100 : Poly3.Poly :=
   ((2 : ℚ) • (pPoly ^ 2)) + ((-2 : ℚ) • pPoly) + (((1 : ℚ) / 2) • (1 : Poly3.Poly))
 
 private theorem certPoly_0010010100_eq :
-    certPoly cert_0010010100 = poly_0010010100 := by
+    ∀ p t : ℝ, Poly3.eval p t 0 (certPoly cert_0010010100) = Poly3.eval p t 0 poly_0010010100 := by
+  intro p t
   simpa [poly_0010010100, Step2Sparse.poly_0010010100] using
-    (Step2Sparse.certPoly_0010010100_eq :
-      certPoly cert_0010010100 = Step2Sparse.poly_0010010100)
+    (Step2Sparse.certPoly_0010010100_eq (p := p) (t := t) :
+      Poly3.eval p t 0 (certPoly cert_0010010100) = Poly3.eval p t 0 Step2Sparse.poly_0010010100)
 
 private theorem prob_0010010100_eq_formula (μ : Measure FiniteDependence.MIS.State)
     [IsProbabilityMeasure μ] (hstat : Stationary μ) (hdep : KDependent 5 μ) :
@@ -200,7 +201,7 @@ private theorem prob_0010010100_eq_formula (μ : Measure FiniteDependence.MIS.St
     FiniteDependence.MIS.Model.prob μ (cylStr (a := (0 : ℤ)) "0010010100") =
         Poly3.eval (pVal μ) (tVal μ) 0 (certPoly cert_0010010100) := hcert
     _ = Poly3.eval (pVal μ) (tVal μ) 0 poly_0010010100 := by
-          simpa [certPoly_0010010100_eq]
+          simpa using certPoly_0010010100_eq (p := pVal μ) (t := tVal μ)
     _ = 2 * (pVal μ) ^ 2 - 2 * pVal μ + (1 / 2 : ℝ) := by
           simp [poly_0010010100, pPoly, tPoly, Poly3.eval_add, Poly3.eval_sub, Poly3.eval_mul,
             Poly3.eval_smul, Poly3.eval_pow, Poly3.eval_varP, Poly3.eval_varT, Poly3.eval_const]

@@ -245,32 +245,31 @@ def rCompat (p t : ℝ) : ℝ :=
   (-16 : ℝ) * p ^ 4 + 12 * p ^ 2 * t + 84 * p ^ 2 + (-60 : ℝ) * p * t + (-60 : ℝ) * p +
     9 * t ^ 2 + 21 * t + 11
 
-theorem fSparsePoly_eq : fSparsePoly = fExpectedPoly := by
-  simp_rw [fSparsePoly, fExpectedPoly,
-    certPoly_1_eq,
-    certPoly_0010100101_eq,
-    certPoly_100_eq,
-    certPoly_10100101_eq,
-    certPoly_10100_eq,
-    certPoly_001001_eq,
-    certPoly_100101_eq,
-    certPoly_100100_eq,
-    certPoly_00101_eq,
-    certPoly_101_eq,
-    certPoly_1010010101_eq]
-  with_unfolding_all decide
+theorem fSparsePoly_eq (p t : ℝ) :
+    Poly3.eval p t 0 fSparsePoly = Poly3.eval p t 0 fExpectedPoly := by
+  simp [fSparsePoly, fExpectedPoly, Poly3.eval_add, Poly3.eval_sub, Poly3.eval_mul]
+  rw [certPoly_1_eq p t, certPoly_0010100101_eq p t, certPoly_100_eq p t,
+    certPoly_10100101_eq p t, certPoly_10100_eq p t, certPoly_001001_eq p t,
+    certPoly_100101_eq p t, certPoly_100100_eq p t, certPoly_00101_eq p t,
+    certPoly_101_eq p t, certPoly_1010010101_eq p t]
+  simp [fExpectedPoly, poly_1, poly_0010100101, poly_100, poly_10100101, poly_10100,
+    poly_001001, poly_100101, poly_100100, poly_00101, poly_101, poly_1010010101, pPoly, tPoly,
+    Poly3.eval_add, Poly3.eval_sub, Poly3.eval_mul, Poly3.eval_smul, Poly3.eval_pow,
+    Poly3.eval_varP, Poly3.eval_varT, Poly3.eval_const]
+  ring_nf
 
-theorem rSparsePoly_eq : rSparsePoly = rExpectedPoly := by
-  simp_rw [rSparsePoly, rExpectedPoly,
-    certPoly_00100_eq,
-    certPoly_1010010100_eq,
-    certPoly_00100100_eq,
-    certPoly_0010100_eq,
-    certPoly_0010010100_eq,
-    certPoly_10100_eq,
-    certPoly_0010010100100_eq,
-    certPoly_00_eq]
-  with_unfolding_all decide
+theorem rSparsePoly_eq (p t : ℝ) :
+    Poly3.eval p t 0 rSparsePoly = Poly3.eval p t 0 rExpectedPoly := by
+  simp [rSparsePoly, rExpectedPoly, Poly3.eval_add, Poly3.eval_sub, Poly3.eval_mul,
+    Poly3.eval_neg]
+  rw [certPoly_00100_eq p t, certPoly_1010010100_eq p t, certPoly_00100100_eq p t,
+    certPoly_0010100_eq p t, certPoly_0010010100_eq p t, certPoly_10100_eq p t,
+    certPoly_0010010100100_eq p t, certPoly_00_eq p t]
+  simp [rExpectedPoly, poly_00100, poly_001001, poly_1010010100, poly_0010100101, poly_00100100,
+    poly_0010100, poly_0010010100, poly_10100, poly_0010010100100, poly_00, poly_100, pPoly,
+    tPoly, Poly3.eval_add, Poly3.eval_sub, Poly3.eval_mul, Poly3.eval_smul, Poly3.eval_pow,
+    Poly3.eval_varP, Poly3.eval_varT, Poly3.eval_const]
+  ring_nf
 
 theorem eval_fSparsePoly_eq_zero (μ : Measure FiniteDependence.MIS.State) [IsProbabilityMeasure μ]
     (hstat : Stationary μ) (hdep : KDependent 5 μ) :
@@ -335,7 +334,11 @@ theorem f_eq_zero_prob (μ : Measure FiniteDependence.MIS.State) [IsProbabilityM
   have h0 : Poly3.eval (pVal μ) (tVal μ) 0 fSparsePoly = 0 :=
     eval_fSparsePoly_eq_zero (μ := μ) hstat hdep
   have h1 : Poly3.eval (pVal μ) (tVal μ) 0 fExpectedPoly = 0 := by
-    simpa [fSparsePoly_eq] using h0
+    calc
+      Poly3.eval (pVal μ) (tVal μ) 0 fExpectedPoly =
+          Poly3.eval (pVal μ) (tVal μ) 0 fSparsePoly := by
+            simpa using (fSparsePoly_eq (p := pVal μ) (t := tVal μ)).symm
+      _ = 0 := h0
   have hEval :
       Poly3.eval (pVal μ) (tVal μ) 0 fExpectedPoly =
         K5Elim.f (K := ℝ) (pVal μ) (tVal μ) := by
@@ -351,7 +354,11 @@ theorem rCompat_eq_zero_prob (μ : Measure FiniteDependence.MIS.State) [IsProbab
   have h0 : Poly3.eval (pVal μ) (tVal μ) 0 rSparsePoly = 0 :=
     eval_rSparsePoly_eq_zero (μ := μ) hstat hdep
   have h1 : Poly3.eval (pVal μ) (tVal μ) 0 rExpectedPoly = 0 := by
-    simpa [rSparsePoly_eq] using h0
+    calc
+      Poly3.eval (pVal μ) (tVal μ) 0 rExpectedPoly =
+          Poly3.eval (pVal μ) (tVal μ) 0 rSparsePoly := by
+            simpa using (rSparsePoly_eq (p := pVal μ) (t := tVal μ)).symm
+      _ = 0 := h0
   have hEval :
       Poly3.eval (pVal μ) (tVal μ) 0 rExpectedPoly =
         rCompat (pVal μ) (tVal μ) := by

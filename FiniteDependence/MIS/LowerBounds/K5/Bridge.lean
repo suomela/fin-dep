@@ -65,7 +65,7 @@ private lemma isStationary_toBool (μ : ProbabilityMeasure (ℤ → Fin 2)) (hst
           have hfun : (shift (α := Bool)) ∘ toBoolConfig = toBoolConfig ∘ (shift (α := Fin 2)) := by
             funext x
             simpa [Function.comp] using (toBoolConfig_shift x).symm
-          simpa [hfun]
+          simp [hfun]
     _ = ((μ : Measure (ℤ → Fin 2)).map (shift (α := Fin 2))).map toBoolConfig := by
           symm
           simpa using Measure.map_map (μ := (μ : Measure (ℤ → Fin 2))) hmeas_toBool hmeas_shift_fin2
@@ -108,27 +108,33 @@ private abbrev coordMeasurableSpaceConfig {α : Type*} [MeasurableSpace α] (S :
     MeasurableSpace (ℤ → α) :=
   FiniteDependence.coordMeasurableSpace (coord := fun x : ℤ → α => x) S
 
-private lemma measurable_apply_coord {α : Type*} [MeasurableSpace α] {S : Set ℤ} {i : ℤ} (hi : i ∈ S) :
-    Measurable[coordMeasurableSpaceConfig (α := α) S] (fun x : ℤ → α => x i) := by
-  have hle :
-      MeasurableSpace.comap (fun x : ℤ → α => x i) inferInstance
-        ≤ coordMeasurableSpaceConfig (α := α) S := by
-    classical
-    unfold coordMeasurableSpaceConfig FiniteDependence.coordMeasurableSpace
-    exact le_iSup
-      (fun j : {j : ℤ // j ∈ S} =>
-        MeasurableSpace.comap (fun x : ℤ → α => x j.1) inferInstance) ⟨i, hi⟩
-  exact Measurable.of_comap_le hle
+private def blockIndex (a : ℤ) {n : ℕ} (j : Fin n) : blockSet a n :=
+  ⟨a + Int.ofNat j.1, ⟨j, rfl⟩⟩
+
+private def blockFromRestrict {α : Type*} (a : ℤ) (n : ℕ) :
+    (blockSet a n → α) → (Fin n → α) :=
+  fun y j => y (blockIndex a j)
+
+private lemma measurable_blockFromRestrict {α : Type*} [MeasurableSpace α] (a : ℤ) (n : ℕ) :
+    Measurable (blockFromRestrict (α := α) a n) := by
+  refine measurable_pi_lambda _ (fun j => ?_)
+  simpa [blockFromRestrict, blockIndex] using
+    (measurable_pi_apply (a := blockIndex a j))
+
+private lemma block_eq_blockFromRestrict_comp_restrict {α : Type*} (a : ℤ) (n : ℕ) :
+    block (α := α) a n = blockFromRestrict (α := α) a n ∘ Set.restrict (blockSet a n) := by
+  funext x
+  ext j
+  rfl
 
 private lemma measurable_block_coord {α : Type*} [MeasurableSpace α] (a : ℤ) (n : ℕ) :
     Measurable[coordMeasurableSpaceConfig (α := α) (blockSet a n)] (block (α := α) a n) := by
-  classical
-  -- Work in the coordinate σ-algebra on exactly the indices in the block.
-  letI : MeasurableSpace (ℤ → α) := coordMeasurableSpaceConfig (α := α) (blockSet a n)
-  refine measurable_pi_lambda _ (fun j => ?_)
-  have hj : a + Int.ofNat j.1 ∈ blockSet a n := ⟨j, rfl⟩
-  simpa [block] using
-    (measurable_apply_coord (α := α) (S := blockSet a n) (i := a + Int.ofNat j.1) hj)
+  have hrestrict :
+      Measurable[coordMeasurableSpaceConfig (α := α) (blockSet a n)] (Set.restrict (blockSet a n)) := by
+    simpa [coordMeasurableSpaceConfig] using
+      (FiniteDependence.measurable_restrict_coordMeasurableSpace (α := α) (S := blockSet a n))
+  simpa [block_eq_blockFromRestrict_comp_restrict, Function.comp] using
+    (measurable_blockFromRestrict (α := α) a n).comp hrestrict
 
 private lemma indexSeparated_blockSet {a b : ℤ} {m n k : ℕ}
     (hsep :
@@ -191,58 +197,28 @@ private lemma measurable_block_config {α : Type*} [MeasurableSpace α] (a : ℤ
   refine measurable_pi_lambda _ (fun j => ?_)
   simpa [block] using (measurable_pi_apply (a := a + Int.ofNat j.1))
 
+private lemma measurable_bool_eq_const (i : ℤ) (b : Bool) :
+    Measurable fun x : ℤ → Bool => x i = b := by
+  have hi : Measurable (fun x : ℤ → Bool => x i) := by
+    simpa using (measurable_pi_apply (a := i))
+  exact hi.eq_const b
+
 private lemma measurableSet_isMIS_bool :
     MeasurableSet {x : ℤ → Bool | FiniteDependence.MIS.IsMIS x} := by
-  classical
-  -- Independence constraint (`11` forbidden).
-  have h11_single (i : ℤ) :
-      MeasurableSet {x : ℤ → Bool | x i = true ∧ x (i + 1) = true} := by
-    have hmeas : Measurable fun x : ℤ → Bool => (x i, x (i + 1)) :=
-      (measurable_pi_apply (a := i)).prodMk (measurable_pi_apply (a := i + 1))
-    simpa [Set.preimage, Set.mem_singleton_iff] using
-      (measurableSet_singleton (true, true)).preimage hmeas
-  have h11_comp (i : ℤ) :
-      MeasurableSet {x : ℤ → Bool | ¬(x i = true ∧ x (i + 1) = true)} :=
-    (h11_single i).compl
   have h11 :
-      MeasurableSet {x : ℤ → Bool | ∀ i : ℤ, ¬(x i = true ∧ x (i + 1) = true)} := by
-    have hEq :
-        ({x : ℤ → Bool | ∀ i : ℤ, ¬(x i = true ∧ x (i + 1) = true)}
-          = ⋂ i : ℤ, {x : ℤ → Bool | ¬(x i = true ∧ x (i + 1) = true)}) := by
-      ext x
-      simp
-    rw [hEq]
-    exact MeasurableSet.iInter h11_comp
-
-  -- Maximality constraint (`000` forbidden).
-  have h000_single (i : ℤ) :
-      MeasurableSet {x : ℤ → Bool | x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false} := by
-    have hmeas : Measurable fun x : ℤ → Bool => (x i, x (i + 1), x (i + 2)) :=
-      (measurable_pi_apply (a := i)).prodMk
-        ((measurable_pi_apply (a := i + 1)).prodMk (measurable_pi_apply (a := i + 2)))
-    simpa [Set.preimage, Set.mem_singleton_iff, and_assoc] using
-      (measurableSet_singleton (false, false, false)).preimage hmeas
-  have h000_comp (i : ℤ) :
-      MeasurableSet {x : ℤ → Bool | ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false)} :=
-    (h000_single i).compl
+      Measurable fun x : ℤ → Bool =>
+        ∀ i : ℤ, ¬(x i = true ∧ x (i + 1) = true) := by
+    refine Measurable.forall fun i => ?_
+    exact ((measurable_bool_eq_const i true).and
+      (measurable_bool_eq_const (i + 1) true)).not
   have h000 :
-      MeasurableSet {x : ℤ → Bool | ∀ i : ℤ, ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false)} := by
-    have hEq :
-        ({x : ℤ → Bool | ∀ i : ℤ, ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false)}
-          = ⋂ i : ℤ, {x : ℤ → Bool | ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false)}) := by
-      ext x
-      simp
-    rw [hEq]
-    exact MeasurableSet.iInter h000_comp
-
-  -- Combine.
-  have hEq :
-      ({x : ℤ → Bool | FiniteDependence.MIS.IsMIS x}
-        = {x : ℤ → Bool | ∀ i : ℤ, ¬(x i = true ∧ x (i + 1) = true)}
-            ∩ {x : ℤ → Bool | ∀ i : ℤ, ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false)}) := by
-    ext x
-    simp [FiniteDependence.MIS.IsMIS]
-  simpa [hEq] using h11.inter h000
+      Measurable fun x : ℤ → Bool =>
+        ∀ i : ℤ, ¬(x i = false ∧ x (i + 1) = false ∧ x (i + 2) = false) := by
+    refine Measurable.forall fun i => ?_
+    exact ((measurable_bool_eq_const i false).and
+      ((measurable_bool_eq_const (i + 1) false).and
+        (measurable_bool_eq_const (i + 2) false))).not
+  simpa [FiniteDependence.MIS.IsMIS] using (h11.and h000).setOf
 
 private lemma prob_isMIS_toBoolConfig (μ : ProbabilityMeasure (ℤ → Fin 2))
     (hMIS : (μ : Measure (ℤ → Fin 2)) {x | IsMIS x} = 1) :
@@ -387,7 +363,7 @@ theorem not_exists_stationary_fiveDependent_MIS : ¬ ExistsStationaryKDependentM
           = (shift (α := Bool)) ∘ ((↑) : FiniteDependence.MIS.State → (ℤ → Bool)) := by
       funext ω
       ext i
-      simp [FiniteDependence.MIS.Model.shift, shift, FiniteDependence.shift, add_assoc]
+      simp [FiniteDependence.MIS.Model.shift, shift, FiniteDependence.shift]
     -- Compute both sides in `Measure (ℤ → Bool)`.
     calc
       (μState.map (FiniteDependence.MIS.Model.shift (1 : ℤ))).map ((↑) : FiniteDependence.MIS.State → (ℤ → Bool))

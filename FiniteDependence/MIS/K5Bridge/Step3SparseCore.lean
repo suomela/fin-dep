@@ -1,6 +1,6 @@
 import FiniteDependence.MIS.K5Bridge.Dist7
 import FiniteDependence.MIS.K5Bridge.NoDup
-import FiniteDependence.MIS.K5Bridge.SparseCertData
+import FiniteDependence.MIS.K5Bridge.SparseCertCore
 import FiniteDependence.MIS.K5Bridge.StepLemmas
 import FiniteDependence.MIS.Poly3Eval
 
@@ -516,8 +516,14 @@ def rowValidB : RowKind → Bool
 
 theorem allRows_rowValidB :
     allRows.all rowValidB = true := by
-  set_option maxRecDepth 1000000 in
-    with_unfolding_all decide
+  simp [allRows, splitRows, rowValidB]
+  constructor
+  · intro u hu
+    simpa [words13] using hu
+  · intro dm hdm i hi j hj
+    constructor
+    · omega
+    · omega
 
 private lemma allRows_rowValidB_forall :
     ∀ r ∈ allRows, rowValidB r = true := by

@@ -1,15 +1,10 @@
-import FiniteDependence.MIS.K5Bridge.StepLemmas
+import FiniteDependence.MIS.K5Bridge.SparseCertTables
 
 namespace FiniteDependence.MIS
 
 namespace K5Bridge
 
 namespace Model
-
-open K5Data
-
-set_option maxRecDepth 1000000
-set_option maxHeartbeats 20000000
 
 /-!
 Sparse dual-certificate data for the streamlined `k = 5` Step-3 argument.
@@ -20,64 +15,10 @@ The fixed length-14 row system has:
 - 214 split rows (`m+n=9`, gap 5, with `m,n ∈ {2,…,7}`),
 for a total of 280 rows and 86 length-14 unknown cylinders.
 
-This file stores the sparse certificates used in the manuscript/script and provides
-computable checkers for `Aᵀ λ = c_prefix`.
+This file stores the sparse certificates used in the manuscript/script.
 -/
 
 noncomputable section
-
-def words14 : List String :=
-  (K5Data.allowedWords 14).toList
-
-def words13 : List String :=
-  (K5Data.allowedWords 13).toList
-
-inductive RowKind where
-  | norm
-  | stat13 (u : String)
-  | split (m : Nat) (x : String) (n : Nat) (y : String)
-deriving DecidableEq, Repr
-
-def splitRows : List RowKind := do
-  let dm ← List.range 6
-  let m := dm + 2
-  let n := 9 - m
-  let x ← (K5Data.allowedWords m).toList
-  let y ← (K5Data.allowedWords n).toList
-  pure (RowKind.split m x n y)
-
-def allRows : List RowKind :=
-  RowKind.norm :: (words13.map RowKind.stat13) ++ splitRows
-
-theorem allRows_length : allRows.length = 280 := by
-  set_option maxRecDepth 1000000 in
-    decide
-
-theorem words14_length : words14.length = 86 := by
-  decide
-
-def rowCoeff (r : RowKind) (w : String) : ℚ :=
-  match r with
-  | .norm => 1
-  | .stat13 u =>
-      (if prefixOf w 13 = u then (1 : ℚ) else 0) -
-        (if suffixFrom w 1 = u then (1 : ℚ) else 0)
-  | .split m x _n y =>
-      if prefixOf w m = x ∧ suffixFrom w (m + 5) = y then (1 : ℚ) else 0
-
-def targetCoeff (pref w : String) : ℚ :=
-  if prefixOf w pref.length = pref then (1 : ℚ) else 0
-
-def certCoeffAt (cert : List (Nat × ℚ)) (w : String) : ℚ :=
-  cert.foldl
-    (fun acc rc =>
-      let i := rc.1
-      let c := rc.2
-      acc + c * rowCoeff (allRows.getD i RowKind.norm) w)
-    0
-
-def certificateMatches (pref : String) (cert : List (Nat × ℚ)) : Bool :=
-  words14.all (fun w => decide (certCoeffAt cert w = targetCoeff pref w))
 
 -- generated cert definitions
 def cert_100100101 : List (Nat × ℚ) :=
@@ -321,17 +262,89 @@ theorem row_index_profile :
   set_option maxRecDepth 1000000 in
     decide
 
-theorem certificates_match_targets :
-    certificates.all (fun p => certificateMatches p.1 p.2) = true := by
-  set_option maxHeartbeats 20000000 in
-    set_option maxRecDepth 1000000 in
-      with_unfolding_all decide
+theorem cert_100100101_matches :
+    certificateMatches "100100101" cert_100100101 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_100100101, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_00101001001_matches :
+    certificateMatches "00101001001" cert_00101001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_00101001001, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem cert_100100_matches :
+    certificateMatches "100100" cert_100100 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_100100, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_10100101001001_matches :
+    certificateMatches "10100101001001" cert_10100101001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_10100101001001, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_10010010101_matches :
+    certificateMatches "10010010101" cert_10010010101 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_10010010101, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem cert_101001001_matches :
+    certificateMatches "101001001" cert_101001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_101001001, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem cert_01010101001001_matches :
+    certificateMatches "01010101001001" cert_01010101001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_01010101001001, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem cert_100100100100_matches :
+    certificateMatches "100100100100" cert_100100100100 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_100100100100, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem cert_01001001_matches :
+    certificateMatches "01001001" cert_01001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_01001001, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_100100100_matches :
+    certificateMatches "100100100" cert_100100100 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_100100100, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_01001001001_matches :
+    certificateMatches "01001001001" cert_01001001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_01001001001, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_10010010010101_matches :
+    certificateMatches "10010010010101" cert_10010010010101 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_10010010010101, certCoeffAt, targetCoeff, rowCoeff]
+
+theorem cert_001001_matches :
+    certificateMatches "001001" cert_001001 = true := by
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_001001, certCoeffAt, targetCoeff, rowCoeff]
 
 theorem cert_1010100101_matches :
     certificateMatches "1010100101" cert_1010100101 = true := by
-  set_option maxHeartbeats 20000000 in
-    set_option maxRecDepth 1000000 in
-      with_unfolding_all decide
+  rw [certificateMatches, words14_eq_explicit]
+  simp [cert_1010100101, certCoeffAt, targetCoeff, rowCoeff]
+  all_goals norm_num
+
+theorem certificates_match_targets :
+    certificates.all (fun p => certificateMatches p.1 p.2) = true := by
+  simp [cert_100100101_matches, cert_00101001001_matches, cert_100100_matches,
+    cert_10100101001001_matches, cert_10010010101_matches, cert_101001001_matches,
+    cert_01010101001001_matches, cert_100100100100_matches, cert_01001001_matches,
+    cert_100100100_matches, cert_01001001001_matches, cert_10010010010101_matches,
+    cert_001001_matches, certificates]
 
 end
 

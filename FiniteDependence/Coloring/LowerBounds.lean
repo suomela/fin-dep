@@ -1,4 +1,5 @@
 import FiniteDependence.Coloring.Existence
+import FiniteDependence.Core.MeasurablePredicates
 
 import Mathlib.MeasureTheory.Measure.Map
 import Mathlib.MeasureTheory.MeasurableSpace.Prod
@@ -29,40 +30,6 @@ private lemma measurable_apply_future (i : ℤ) (k : ℕ) (j : ℤ) (hj : i + k 
   simpa [futureMeasurableSpace, FiniteDependence.futureMeasurableSpace] using
     (le_iSup (fun j' : {j : ℤ // i + k ≤ j} =>
       MeasurableSpace.comap (fun x : ℤ → Fin 4 => x j'.1) inferInstance) ⟨j, hj⟩)
-
-private lemma measurableSet_isColoring :
-    MeasurableSet ({x : ℤ → Fin 4 | IsColoring x} : Set (ℤ → Fin 4)) := by
-  classical
-  have hbad (i : ℤ) : MeasurableSet ({x : ℤ → Fin 4 | x i = x (i + 1)} : Set (ℤ → Fin 4)) := by
-    have hsingle (a : Fin 4) :
-        MeasurableSet ({x : ℤ → Fin 4 | x i = a ∧ x (i + 1) = a} : Set (ℤ → Fin 4)) := by
-      have hmeas : Measurable (fun x : ℤ → Fin 4 => (x i, x (i + 1))) :=
-        (measurable_pi_apply (a := i)).prodMk (measurable_pi_apply (a := i + 1))
-      simpa [Set.preimage, Set.mem_singleton_iff] using
-        (measurableSet_singleton (a, a)).preimage hmeas
-    have hEq :
-        ({x : ℤ → Fin 4 | x i = x (i + 1)} : Set (ℤ → Fin 4))
-          = ⋃ a : Fin 4, ({x : ℤ → Fin 4 | x i = a ∧ x (i + 1) = a} : Set (ℤ → Fin 4)) := by
-      ext x
-      constructor
-      · intro hx
-        refine mem_iUnion.2 ?_
-        refine ⟨x i, ?_⟩
-        constructor
-        · rfl
-        · exact hx.symm
-      · intro hx
-        rcases mem_iUnion.1 hx with ⟨a, ha⟩
-        exact ha.1.trans ha.2.symm
-    simpa [hEq] using MeasurableSet.iUnion hsingle
-
-  have hEq :
-      ({x : ℤ → Fin 4 | IsColoring x} : Set (ℤ → Fin 4))
-        = (⋃ i : ℤ, ({x : ℤ → Fin 4 | x i = x (i + 1)} : Set (ℤ → Fin 4)))ᶜ := by
-    ext x
-    simp [IsColoring]
-
-  simpa [hEq] using (MeasurableSet.iUnion hbad).compl
 
 /-- No stationary `0`-dependent proper `4`-coloring law exists on `ℤ`. -/
 theorem not_exists_stationary_zeroDependent_fourColoring :
@@ -110,7 +77,9 @@ theorem not_exists_stationary_zeroDependent_fourColoring :
     simpa [B, Set.preimage, Set.mem_singleton_iff] using (measurableSet_singleton a).preimage hcoord
 
   have hcolorMeas : MeasurableSet ({x : ℤ → Fin 4 | IsColoring x} : Set (ℤ → Fin 4)) :=
-    measurableSet_isColoring
+    by
+      simpa [FiniteDependence.Coloring.IsColoring, FiniteDependence.IsColoring] using
+        (FiniteDependence.measurableSet_isColoring (q := 4))
 
   have hcolorμm : μm ({x : ℤ → Fin 4 | IsColoring x} : Set (ℤ → Fin 4)) = 1 := by
     simpa [μm] using hcolor
